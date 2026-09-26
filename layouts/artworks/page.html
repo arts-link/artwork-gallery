@@ -1,0 +1,40 @@
+{{- /* One artwork's permanent page. With JavaScript it turns into the gallery
+       lightbox; without it (and for crawlers) it is a complete page. */ -}}
+{{ define "head" }}
+<script>document.documentElement.classList.add("gallery-enhancing");document.documentElement.setAttribute("aria-busy","true");window.__galleryFallback=setTimeout(function(){document.documentElement.classList.remove("gallery-enhancing");document.documentElement.removeAttribute("aria-busy")},8000)</script>
+{{ end }}
+
+{{ define "main" }}
+{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
+{{- $artworks := partialCached "artwork-gallery/artworks.html" . -}}
+{{- $previous := false -}}{{- $next := false -}}
+{{- range $i, $p := $artworks -}}
+  {{- if eq $p $ -}}
+    {{- if gt $i 0 -}}{{- $previous = index $artworks (sub $i 1) -}}{{- end -}}
+    {{- if lt (add $i 1) (len $artworks) -}}{{- $next = index $artworks (add $i 1) -}}{{- end -}}
+  {{- end -}}
+{{- end }}
+  <article class="artwork">
+    <h1 class="page-title">{{ $info.displayTitle }}</h1>
+    <picture>
+      <source srcset="{{ $info.largeWebp.RelPermalink }}" type="image/webp">
+      <img class="artwork__image" src="{{ $info.large.RelPermalink }}" alt="{{ $info.alt }}"
+           width="{{ $info.large.Width }}" height="{{ $info.large.Height }}" fetchpriority="high">
+    </picture>
+{{- with $info.status }}
+    <p class="artwork__meta">{{ . }}</p>
+{{- end }}
+    <nav class="artwork__nav" aria-label="Artwork">
+      {{ with $previous }}<a rel="prev" href="{{ .RelPermalink }}">Previous</a>{{ else }}<span></span>{{ end }}
+      <a href="{{ .Parent.RelPermalink }}">All work</a>
+      {{ with $next }}<a rel="next" href="{{ .RelPermalink }}">Next</a>{{ else }}<span></span>{{ end }}
+    </nav>
+  </article>
+{{ end }}
+
+{{ define "scripts" }}
+<script src="{{ (partial "artwork-gallery/script.html" "gallery-entry").RelPermalink }}"
+        data-gallery-path="{{ .Parent.RelPermalink }}"
+        data-progressive="{{ (partial "artwork-gallery/script.html" "gallery-progressive").RelPermalink }}"
+        data-lightbox="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
+{{ end }}

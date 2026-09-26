@@ -1,0 +1,7 @@
+{{- /* How many artworks share each (case-insensitive) title. */ -}}
+{{- $counts := dict -}}
+{{- range partialCached "artwork-gallery/artworks.html" . -}}
+  {{- $key := lower .Title -}}
+  {{- $counts = merge $counts (dict $key (add 1 (index $counts $key | default 0))) -}}
+{{- end -}}
+{{- return $counts -}}

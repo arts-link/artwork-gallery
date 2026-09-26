@@ -1,0 +1,19 @@
+{{- /* Every artwork page in gallery order (weight, then title). */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $section := site.GetPage (printf "/%s" $cfg.section) -}}
+{{- if not $section -}}
+  {{- errorf "artwork-gallery: section %q not found" $cfg.section -}}
+{{- end -}}
+{{- $pages := $section.RegularPagesRecursive.ByWeight -}}
+{{- $seen := dict -}}
+{{- range $p := $pages -}}
+  {{- if not $p.Weight -}}
+    {{- errorf "artwork-gallery: %s has no weight (its position in the gallery)" $p.File.Path -}}
+  {{- end -}}
+  {{- $key := string $p.Weight -}}
+  {{- with index $seen $key -}}
+    {{- errorf "artwork-gallery: %s and %s both use weight %s" . $p.File.Path $key -}}
+  {{- end -}}
+  {{- $seen = merge $seen (dict $key $p.File.Path) -}}
+{{- end -}}
+{{- return $pages -}}

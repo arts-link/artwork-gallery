@@ -1,0 +1,20 @@
+{{- /* Split the gallery into content-addressed JSON batches so later artwork
+       data is only downloaded as a visitor scrolls. Returns the records for the
+       first (server-rendered) batch and the URLs of the rest. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $size := int $cfg.batchSize -}}
+{{- $records := slice -}}
+{{- range $i, $p := partialCached "artwork-gallery/artworks.html" . -}}
+  {{- $records = $records | append (partial "artwork-gallery/record.html" (dict "page" $p "index" $i)) -}}
+{{- end -}}
+{{- $urls := slice -}}
+{{- $n := 0 -}}
+{{- if gt (len $records) $size -}}
+{{- range $start := seq $size $size (sub (len $records) 1) -}}
+  {{- $n = add $n 1 -}}
+  {{- $json := $records | after $start | first $size | jsonify -}}
+  {{- $batch := resources.FromString (printf "assets/data/gallery/batch-%d.json" $n) (printf "%s\n" $json) | fingerprint "sha256" -}}
+  {{- $urls = $urls | append $batch.RelPermalink -}}
+{{- end -}}
+{{- end -}}
+{{- return dict "first" (first $size $records) "urls" $urls "count" (len $records) -}}

@@ -1,0 +1,15 @@
+{{- /* The small, browser-safe description of one gallery tile. The first batch
+       is rendered as HTML; later batches are the same records as JSON. */ -}}
+{{- $info := partialCached "artwork-gallery/info.html" .page .page.RelPermalink -}}
+{{- return dict
+  "i" .index
+  "slug" .page.File.ContentBaseName
+  "href" .page.RelPermalink
+  "image" $info.largeWebp.RelPermalink
+  "title" $info.title
+  "meta" $info.status
+  "alt" $info.alt
+  "documentTitle" $info.documentTitle
+  "thumbWebp" $info.thumbWebp.RelPermalink
+  "thumb" $info.thumb.RelPermalink
+-}}

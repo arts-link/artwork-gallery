@@ -1,0 +1,21 @@
+{{- /* schema.org VisualArtwork for one artwork page. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
+{{- $artistID := printf "%s#artist" site.Home.Permalink -}}
+{{- $artwork := dict
+  "@type" "VisualArtwork"
+  "@id" (printf "%s#artwork" .Permalink)
+  "name" $info.displayTitle
+  "url" .Permalink
+  "artform" $cfg.artform
+  "creator" (dict "@id" $artistID)
+  "mainEntityOfPage" (dict "@id" (printf "%s#webpage" .Permalink))
+  "image" (dict
+    "@type" "ImageObject"
+    "contentUrl" $info.large.Permalink
+    "thumbnailUrl" $info.thumb.Permalink
+    "creditText" (site.Params.artist | default site.Title)
+    "creator" (dict "@id" $artistID))
+-}}
+{{- with $info.status -}}{{- $artwork = merge $artwork (dict "description" .) -}}{{- end -}}
+{{- return $artwork -}}

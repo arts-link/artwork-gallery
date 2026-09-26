@@ -1,0 +1,12 @@
+{{- /* ItemList of every artwork, for the gallery section page. */ -}}
+{{- $items := slice -}}
+{{- range $i, $p := partialCached "artwork-gallery/artworks.html" . -}}
+  {{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "item" (partial "artwork-gallery/schema-artwork.html" $p)) -}}
+{{- end -}}
+{{- return dict
+  "@type" "ItemList"
+  "@id" (printf "%s#artworks" .Permalink)
+  "name" (printf "Artwork by %s" (site.Params.artist | default site.Title))
+  "numberOfItems" (len $items)
+  "itemListElement" $items
+-}}

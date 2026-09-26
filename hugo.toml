@@ -1,0 +1,18 @@
+# Defaults for the artwork-gallery component. Sites override any of these
+# under [params.artworkGallery] in their own configuration.
+[params.artworkGallery]
+  section = "gallery"
+  batchSize = 24
+  artform = "Artwork"
+  untitled = "Untitled"
+  thumbSize = 640
+  largeSize = 1600
+  thumbQuality = 82
+  largeQuality = 85
+  webpThumbQuality = 80
+  webpLargeQuality = 82
+
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.146.0"

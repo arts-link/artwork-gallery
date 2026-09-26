@@ -1,0 +1,10 @@
+{{- /* BreadcrumbList for one artwork page: Home > gallery > artwork. */ -}}
+{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
+{{- return dict
+  "@type" "BreadcrumbList"
+  "@id" (printf "%s#breadcrumb" .Permalink)
+  "itemListElement" (slice
+    (dict "@type" "ListItem" "position" 1 "name" "Home" "item" site.Home.Permalink)
+    (dict "@type" "ListItem" "position" 2 "name" (.Parent.Params.breadcrumb | default "Gallery") "item" .Parent.Permalink)
+    (dict "@type" "ListItem" "position" 3 "name" $info.displayTitle "item" .Permalink))
+-}}

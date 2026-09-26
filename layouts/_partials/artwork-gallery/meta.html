@@ -1,0 +1,39 @@
+{{- /* Search and sharing metadata for pages the component owns.
+       A theme's <head> calls this and falls back to its own values when the
+       returned map is empty:
+         pageType     schema.org WebPage subtype
+         title        full <title> text
+         description  meta description
+         image        image resource for og:image
+         imageAlt     og:image:alt
+         mainEntity   extra JSON-LD node the page is about
+         breadcrumb   BreadcrumbList JSON-LD node */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $artist := site.Params.artist | default site.Title -}}
+{{- $result := dict -}}
+{{- if eq .Section $cfg.section -}}
+  {{- if .IsPage -}}
+    {{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
+    {{- $result = dict
+      "pageType" "ItemPage"
+      "title" $info.documentTitle
+      "description" $info.description
+      "image" $info.social
+      "imageAlt" $info.alt
+      "mainEntity" (partial "artwork-gallery/schema-artwork.html" .)
+      "breadcrumb" (partial "artwork-gallery/schema-breadcrumb.html" .)
+    -}}
+  {{- else if .IsSection -}}
+    {{- $artworks := partialCached "artwork-gallery/artworks.html" . -}}
+    {{- $firstInfo := partialCached "artwork-gallery/info.html" (index $artworks 0) (index $artworks 0).RelPermalink -}}
+    {{- $result = dict
+      "pageType" "ImageGallery"
+      "title" (printf "%s | %s" (.Params.seoTitle | default .Title) $artist)
+      "description" (.Description | default (printf "Explore %d %s artworks by %s." (len $artworks) (lower $cfg.artform) $artist))
+      "image" $firstInfo.large
+      "imageAlt" ($firstInfo.title | default (printf "%s artwork by %s" $cfg.artform $artist))
+      "mainEntity" (partial "artwork-gallery/schema-list.html" .)
+    -}}
+  {{- end -}}
+{{- end -}}
+{{- return $result -}}

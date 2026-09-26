@@ -1,0 +1,196 @@
+/* artwork-gallery: grid, artwork page, lightbox and entry handoff.
+   Colours and fonts come from --ag-* custom properties so each theme can style
+   the component without overriding selectors. */
+:root {
+  --ag-tile-bg: #eee;
+  --ag-caption-bg: rgba(255, 255, 255, 0.85);
+  --ag-caption-ink: inherit;
+  --ag-title-font: inherit;
+  --ag-text-font: inherit;
+  --ag-lightbox-bg: rgba(20, 20, 20, 0.94);
+  --ag-lightbox-cover: rgb(20, 20, 20);
+  --ag-lightbox-ink: #fff;
+}
+
+/* Artwork URLs render real fallback HTML, then enhance into the gallery.
+   Cover that brief handoff before first paint so the standalone layout does
+   not flash underneath the lightbox. JavaScript failure removes this class. */
+html.gallery-enhancing,
+html.gallery-enhancing body { overflow: hidden; }
+html.gallery-enhancing::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: var(--ag-lightbox-cover);
+}
+
+/* ------------------------------------------------------------- gallery  -- */
+.gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.gallery[hidden] { display: none; }
+.gallery__sentinel { height: 1px; }
+.gallery__fallback { margin-top: 28px; }
+.gallery__fallback ol { columns: 2 15rem; padding-left: 1.25rem; }
+.tile { position: relative; margin: 0; }
+.tile > a {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  background: var(--ag-tile-bg);
+  text-decoration: none;
+}
+.tile img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+.tile__caption {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  gap: .25em;
+  padding: 10px;
+  background: var(--ag-caption-bg);
+  opacity: 0;
+  transition: opacity .4s ease;
+}
+.tile > a:hover .tile__caption,
+.tile > a:focus-visible .tile__caption { opacity: 1; }
+/* A pointer-close still returns DOM focus for accessibility, but should not
+   leave a caption painted like a stuck hover. The marker is removed as soon
+   as keyboard navigation begins or focus moves elsewhere. */
+.tile > a[data-pointer-focus-return]:focus { outline: none; }
+.tile > a[data-pointer-focus-return]:focus-visible:not(:hover) .tile__caption {
+  opacity: 0;
+}
+.tile__title {
+  font: normal normal normal 19px/1.3 var(--ag-title-font);
+  color: var(--ag-caption-ink);
+}
+.tile__meta {
+  font: normal normal normal 14px/1.3 var(--ag-text-font);
+  color: var(--ag-caption-ink);
+  white-space: pre-line;
+}
+
+/* ------------------------------------------------------- artwork detail -- */
+.artwork { max-width: 900px; margin-inline: auto; text-align: center; }
+.artwork__image {
+  width: auto;
+  max-width: 100%;
+  max-height: 78vh;
+  margin-inline: auto;
+  object-fit: contain;
+}
+.artwork__meta { margin: 18px auto 0; white-space: pre-line; }
+.artwork__nav {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: center;
+  margin-top: 28px;
+}
+.artwork__nav > :first-child { text-align: left; }
+.artwork__nav > :last-child { text-align: right; }
+
+/* ------------------------------------------------------------- lightbox -- */
+/* Progressive enhancement only: with JS off, every tile is a plain link to
+   its complete artwork page, which still works. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: var(--ag-lightbox-bg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 24px;
+}
+.lightbox__stage {
+  display: flex;
+  max-width: min(100%, 1400px);
+  max-height: 78vh;
+  overflow: hidden;
+  touch-action: none;
+}
+.lightbox img {
+  max-width: 100%;
+  max-height: 78vh;
+  width: auto;
+  object-fit: contain;
+  cursor: zoom-in;
+  transition: transform .2s ease;
+}
+.lightbox img.is-zoomed {
+  cursor: grab;
+}
+.lightbox img.is-dragging {
+  cursor: grabbing;
+  transition: none;
+}
+.lightbox__cap {
+  color: var(--ag-lightbox-ink);
+  text-align: center;
+  font: normal normal normal 16px/1.4 var(--ag-text-font);
+}
+.lightbox__cap b {
+  display: block;
+  font: normal normal normal 22px/1.3 var(--ag-title-font);
+}
+.lightbox button {
+  position: absolute;
+  background: none;
+  border: 0;
+  color: var(--ag-lightbox-ink);
+  font: normal normal 700 32px/1 var(--ag-title-font);
+  cursor: pointer;
+  padding: 12px 18px;
+}
+.lightbox__close { top: 8px; right: 10px; }
+.lightbox__zoom {
+  top: 12px;
+  right: 66px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 12px !important;
+}
+.lightbox__zoom svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+}
+.lightbox__prev  { left: 4px;  top: 50%; transform: translateY(-50%); }
+.lightbox__next  { right: 4px; top: 50%; transform: translateY(-50%); }
+@media (max-width: 600px) {
+  .lightbox__prev, .lightbox__next { top: auto; bottom: 4px; transform: none; }
+}
+
+/* --------------------------------------------------------------- a11y   -- */
+.visually-hidden {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}

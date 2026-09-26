@@ -1,0 +1,21 @@
+{{- /* One gallery tile. Context: dict "record" <record> "eager" <bool>. */ -}}
+{{- $r := .record -}}
+    <li class="tile" id="{{ $r.slug }}">
+      <a href="{{ $r.href }}" data-i="{{ $r.i }}" data-slug="{{ $r.slug }}"
+         data-image="{{ $r.image }}"
+         data-title="{{ $r.title }}" data-meta="{{ $r.meta }}"
+         data-alt="{{ $r.alt }}"
+         data-document-title="{{ $r.documentTitle }}">
+        <picture>
+          <source srcset="{{ $r.thumbWebp }}" type="image/webp">
+          <img src="{{ $r.thumb }}" alt="{{ $r.alt }}"
+               width="640" height="640" {{ if .eager }}loading="eager" fetchpriority="high"{{ else }}loading="lazy"{{ end }}>
+        </picture>
+        {{- if or $r.title $r.meta }}
+        <span class="tile__caption">
+          {{- with $r.title }}<span class="tile__title">{{ . }}</span>{{ end -}}
+          {{- with $r.meta }}<span class="tile__meta">{{ . }}</span>{{ end -}}
+        </span>
+        {{- end }}
+      </a>
+    </li>

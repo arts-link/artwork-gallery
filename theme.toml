@@ -1,0 +1,8 @@
+name = "artwork-gallery"
+license = "MIT"
+description = "Artwork collection component for Hugo: one page per piece, resized images, a progressive grid, a lightbox, and VisualArtwork structured data."
+min_version = "0.146.0"
+
+[author]
+  name = "Arts-Link"
+  homepage = "https://www.arts-link.com"

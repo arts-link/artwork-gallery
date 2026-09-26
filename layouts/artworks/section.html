@@ -1,0 +1,35 @@
+{{- /* The gallery grid. The first batch is plain HTML; the rest arrives as
+       visitors scroll. Every tile is a real link to its artwork page, so the
+       grid works without JavaScript. */ -}}
+{{ define "main" }}
+{{- $batches := partialCached "artwork-gallery/batches.html" . -}}
+{{- $artist := site.Params.artist | default site.Title }}
+  <h1 class="page-title">{{ .Title }}</h1>
+  <ul class="gallery" id="gallery" data-gallery-path="{{ .RelPermalink }}"
+      data-gallery-title="{{ printf "%s | %s" (.Params.seoTitle | default .Title) $artist }}"
+      data-batches="{{ $batches.urls | jsonify }}">
+{{- range $i, $r := $batches.first }}
+{{ partial "artwork-gallery/tile.html" (dict "record" $r "eager" (eq $i 0)) }}
+{{- end }}
+  </ul>
+{{- if $batches.urls }}
+  <div class="gallery__sentinel" id="gallery-sentinel" aria-hidden="true"></div>
+  <p class="visually-hidden" id="gallery-status" aria-live="polite"></p>
+{{- end }}
+  <noscript>
+    <section class="gallery__fallback" aria-labelledby="gallery-fallback-title">
+      <h2 id="gallery-fallback-title">All artwork</h2>
+      <ol>
+{{- range partialCached "artwork-gallery/artworks.html" . }}
+{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink }}
+        <li><a href="{{ .RelPermalink }}">{{ $info.title | default $info.alt }}</a></li>
+{{- end }}
+      </ol>
+    </section>
+  </noscript>
+{{ end }}
+
+{{ define "scripts" }}
+<script src="{{ (partial "artwork-gallery/script.html" "gallery-progressive").RelPermalink }}" defer></script>
+<script src="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
+{{ end }}
