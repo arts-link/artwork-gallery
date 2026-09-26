@@ -5,15 +5,29 @@ permanent page for every artwork, groups work into nested collections and
 albums, shows it in a progressively loaded grid with a lightbox, and describes
 everything with schema.org structured data.
 
-It provides no page chrome. Stack it in front of the theme that does:
+It provides no page chrome. Stack it in front of the theme that does.
+
+## Installation
+
+Requires Hugo extended 0.146 or later. Add it as a submodule pinned to a
+release tag:
+
+```sh
+git submodule add https://github.com/arts-link/artwork-gallery.git themes/artwork-gallery
+git -C themes/artwork-gallery checkout v0.1.0
+```
 
 ```toml
 theme = ["artwork-gallery", "your-theme"]
 ```
 
-Developed inside the alainavarrone.art repository; intended to move to its
-own repository once a second site uses it. `exampleSite/` shows every feature
-with generated placeholder images:
+It also works as a Hugo module (`github.com/arts-link/artwork-gallery`) for
+sites that build with Go available.
+
+To upgrade a site, check out the newer tag in the submodule, read
+[CHANGELOG.md](CHANGELOG.md), rebuild and compare before committing.
+
+`exampleSite/` shows every feature with generated placeholder images:
 
 ```sh
 cd exampleSite && hugo server --themesDir ../..
