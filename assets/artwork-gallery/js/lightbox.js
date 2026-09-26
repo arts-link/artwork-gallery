@@ -10,8 +10,6 @@
   var lastInputWasKeyboard = false;
   var galleryPath = g.getAttribute('data-gallery-path') || '/gallery/';
   var galleryTitle = g.getAttribute('data-gallery-title') || document.title;
-  // Album photos have no pages of their own, so they are addressed as #photo.
-  var hashMode = g.getAttribute('data-url-mode') === 'hash';
 
   function refreshLinks() {
     links = [].slice.call(g.querySelectorAll('a[data-i]'));
@@ -19,14 +17,9 @@
   refreshLinks();
   g.addEventListener('gallery:items-appended', refreshLinks);
 
-  function slug(i) { return links[i].getAttribute('data-slug'); }
-  function path(i) {
-    return hashMode ? galleryPath + '#' + encodeURIComponent(slug(i)) :
-                      links[i].getAttribute('href');
-  }
-  function atGallery() {
-    return location.pathname === galleryPath && (!hashMode || !location.hash);
-  }
+  // Each tile links to its piece's own page, wherever the collection is.
+  function path(i) { return links[i].getAttribute('href'); }
+  function atGallery() { return location.pathname === galleryPath; }
 
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 
@@ -217,12 +210,6 @@
     box.querySelector('.lightbox__close').focus();
   }
   function indexFromPath() {
-    if (hashMode) {
-      var wanted = decodeURIComponent(location.hash.slice(1));
-      return wanted ? links.findIndex(function (a) {
-        return a.getAttribute('data-slug') === wanted;
-      }) : -1;
-    }
     var current = location.pathname.replace(/\/*$/, '/');
     return links.findIndex(function (a) { return a.getAttribute('href') === current; });
   }
@@ -264,6 +251,5 @@
     lastInputWasKeyboard = false;
   }, true);
   addEventListener('popstate', syncFromPath);
-  if (hashMode) addEventListener('hashchange', syncFromPath);
   syncFromPath();
 })();

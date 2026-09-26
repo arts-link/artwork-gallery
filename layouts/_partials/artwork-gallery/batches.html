@@ -7,7 +7,7 @@
 {{- $records := slice -}}
 {{- $dir := printf "assets/data/%s" (strings.Trim .RelPermalink "/") -}}
 {{- range $i, $p := partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
-  {{- $records = $records | append (partial "artwork-gallery/record.html" (dict "page" $p "index" $i)) -}}
+  {{- $records = $records | append (partial "artwork-gallery/record.html" (dict "page" $p "index" $i "collection" $)) -}}
 {{- end -}}
 {{- $urls := slice -}}
 {{- $n := 0 -}}

@@ -1,13 +1,13 @@
 # Defaults for the artwork-gallery component. Sites override any of these
 # under [params.artworkGallery] in their own configuration.
 [params.artworkGallery]
-  section = "gallery"        # section holding the gallery; "" makes the home page the root
+  section = "gallery"        # section holding one folder per piece
   batchSize = 24             # tiles in the HTML; the rest load while scrolling
   artform = "Artwork"
   untitled = "Untitled"
   grid = "square"            # or "justified": rows that keep each image's shape
-  views = "strip"            # extra photos of a piece: "strip" of thumbnails or "stack" full size
-  collectionTaxonomies = []  # taxonomies whose terms are collections, e.g. ["collage", "sculpture"]
+  views = "strip"            # further photos of a piece: "strip" of thumbnails or "stack" full size
+  collectionTaxonomies = []  # taxonomies whose terms are series, e.g. ["collage", "sculpture"]
   thumbSize = 640
   largeSize = 1600
   thumbQuality = 82

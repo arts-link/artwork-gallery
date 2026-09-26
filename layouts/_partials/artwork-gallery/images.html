@@ -1,11 +1,9 @@
-{{- /* The images a bundle shows, in display order. The sharing card (social.*)
-       and images marked `hidden: true` in front matter `resources` are left
-       out. Order follows the page's `sort_by` / `sort_order` (default: file
-       name, ascending); `sort_by: Params.weight` uses resource weights. */ -}}
+{{- /* A piece's photos in file-name order, leaving out the sharing card
+       (social.*) and photos marked `hidden: true` in front matter `resources`. */ -}}
 {{- $images := slice -}}
-{{- range .Resources.ByType "image" -}}
+{{- range sort (.Resources.ByType "image") "Name" -}}
   {{- if and (not (hasPrefix .Name "social")) (not .Params.hidden) -}}
     {{- $images = $images | append . -}}
   {{- end -}}
 {{- end -}}
-{{- return sort $images (.Params.sort_by | default "Name") (.Params.sort_order | default "asc") -}}
+{{- return $images -}}

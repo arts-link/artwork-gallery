@@ -86,6 +86,12 @@
           gallery.dispatchEvent(new CustomEvent('gallery:items-appended'));
           announce('Loaded ' + items.length + ' more artworks.');
           finish();
+          // The observer only fires when the sentinel enters the margin, so
+          // keep going while it is still within reach after this batch.
+          requestAnimationFrame(function () {
+            if (!complete() && sentinel &&
+                sentinel.getBoundingClientRect().top < innerHeight + 1000) loadNext();
+          });
           return true;
         })
         .catch(function () {

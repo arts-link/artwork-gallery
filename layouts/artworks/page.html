@@ -1,29 +1,11 @@
-{{- /* An artwork's permanent page, or an album of photos.
-       An artwork page turns into its collection's lightbox with JavaScript;
-       without it (and for crawlers) it is a complete page. */ -}}
+{{- /* A piece's permanent page. With JavaScript it turns into its home
+       collection's lightbox; without it (and for crawlers) it is a complete
+       page with every view of the piece. */ -}}
 {{ define "head" }}
-{{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" }}
 <script>document.documentElement.classList.add("gallery-enhancing");document.documentElement.setAttribute("aria-busy","true");window.__galleryFallback=setTimeout(function(){document.documentElement.classList.remove("gallery-enhancing");document.documentElement.removeAttribute("aria-busy")},8000)</script>
-{{- end }}
 {{ end }}
 
 {{ define "main" }}
-{{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "album" }}
-{{- $records := slice }}
-{{- range $i, $img := partial "artwork-gallery/images.html" . }}
-{{- $records = $records | append (partial "artwork-gallery/photo.html" (dict "page" $ "image" $img "index" $i)) }}
-{{- end }}
-  <h1 class="page-title">{{ .Title }}</h1>
-{{- with .Content }}
-  <div class="ag-intro">{{ . }}</div>
-{{- end }}
-{{ partial "artwork-gallery/grid.html" (dict "page" . "records" $records "hash" true) }}
-  <nav class="artwork__nav" aria-label="Album">
-    <span></span>
-    <a href="{{ .Parent.RelPermalink }}">{{ .Parent.LinkTitle }}</a>
-    <span></span>
-  </nav>
-{{- else }}
 {{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
 {{- $home := partialCached "artwork-gallery/home-collection.html" . .RelPermalink -}}
 {{- $artworks := partialCached "artwork-gallery/artworks.html" $home $home.RelPermalink -}}
@@ -83,16 +65,11 @@
       {{ with $next }}<a rel="next" href="{{ .RelPermalink }}">Next</a>{{ else }}<span></span>{{ end }}
     </nav>
   </article>
-{{- end }}
 {{ end }}
 
 {{ define "scripts" }}
-{{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "album" }}
-<script src="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
-{{- else }}
 <script src="{{ (partial "artwork-gallery/script.html" "gallery-entry").RelPermalink }}"
         data-gallery-path="{{ (partialCached "artwork-gallery/home-collection.html" . .RelPermalink).RelPermalink }}"
         data-progressive="{{ (partial "artwork-gallery/script.html" "gallery-progressive").RelPermalink }}"
         data-lightbox="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
-{{- end }}
 {{ end }}

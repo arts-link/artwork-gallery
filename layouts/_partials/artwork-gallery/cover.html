@@ -1,16 +1,19 @@
-{{- /* The image that represents a page on cards and sharing previews:
-       a resource marked `cover: true`, else `featured_image`, else a file with
-       "feature" in its name, else its first image. A collection with no images
-       of its own borrows the cover of its first card or artwork. */ -}}
+{{- /* The image that stands for a page on cards and in sharing previews:
+       - a piece: its main image
+       - a series (term): an image in its own folder marked `cover: true` in
+         its `resources`, else the first image there, else its first piece's
+       - a collection taxonomy page: likewise, else its first series' cover */ -}}
 {{- $cover := false -}}
-{{- $all := .Resources.ByType "image" -}}
-{{- with where $all "Params.cover" true -}}{{- $cover = index . 0 -}}{{- end -}}
-{{- if not $cover -}}{{- with .Params.featured_image -}}{{- $cover = $all.GetMatch . -}}{{- end -}}{{- end -}}
-{{- if not $cover -}}{{- $cover = $all.GetMatch "*feature*" -}}{{- end -}}
-{{- if not $cover -}}{{- with partial "artwork-gallery/images.html" . -}}{{- $cover = index . 0 -}}{{- end -}}{{- end -}}
-{{- if and (not $cover) (eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "collection") -}}
-  {{- $first := partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
-  {{- $first = (partialCached "artwork-gallery/children.html" . .RelPermalink) | append $first -}}
-  {{- with $first -}}{{- $cover = partialCached "artwork-gallery/cover.html" (index . 0) (index . 0).RelPermalink -}}{{- end -}}
+{{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
+  {{- $cover = (partialCached "artwork-gallery/info.html" . .RelPermalink).source -}}
+{{- else -}}
+  {{- $own := .Resources.ByType "image" -}}
+  {{- with where $own "Params.cover" true -}}{{- $cover = index . 0 -}}{{- end -}}
+  {{- if not $cover -}}{{- with sort $own "Name" -}}{{- $cover = index . 0 -}}{{- end -}}{{- end -}}
+  {{- if not $cover -}}
+    {{- $first := partialCached "artwork-gallery/children.html" . .RelPermalink -}}
+    {{- if not $first -}}{{- $first = partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}{{- end -}}
+    {{- with $first -}}{{- $cover = partialCached "artwork-gallery/cover.html" (index . 0) (index . 0).RelPermalink -}}{{- end -}}
+  {{- end -}}
 {{- end -}}
 {{- return $cover -}}

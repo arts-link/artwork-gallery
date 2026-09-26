@@ -8,17 +8,14 @@
          imageAlt     og:image:alt
          mainEntity   extra JSON-LD node the page is about
          breadcrumb   BreadcrumbList JSON-LD node
-         noindex      true for private collections and their contents */ -}}
+         noindex      true for a piece marked `private: true` */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $artist := site.Params.artist | default site.Title -}}
 {{- $root := partialCached "artwork-gallery/root.html" . -}}
 {{- $result := dict -}}
 {{- $isTaxonomy := and (in (slice "taxonomy" "term") .Kind) (in $cfg.collectionTaxonomies .Data.Plural) -}}
 {{- if or (eq . $root) (and (.IsDescendant $root) (eq .Type "artworks")) $isTaxonomy -}}
-  {{- $kind := partialCached "artwork-gallery/kind.html" . .RelPermalink -}}
-  {{- $private := false -}}
-  {{- range .Ancestors | append . -}}{{- if .Params.private -}}{{- $private = true -}}{{- end -}}{{- end -}}
-  {{- if eq $kind "artwork" -}}
+  {{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
     {{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
     {{- $result = dict
       "pageType" "ItemPage"
@@ -28,39 +25,31 @@
       "imageAlt" $info.alt
       "mainEntity" (partial "artwork-gallery/schema-artwork.html" .)
       "breadcrumb" (partial "artwork-gallery/schema-breadcrumb.html" .)
+      "noindex" (.Params.private | default false)
     -}}
   {{- else -}}
     {{- $count := partialCached "artwork-gallery/count.html" . .RelPermalink -}}
     {{- $image := partialCached "artwork-gallery/cover.html" . .RelPermalink -}}
     {{- $imageAlt := printf "%s — %s by %s" .Title (lower $cfg.artform) $artist -}}
-    {{- $artworks := slice -}}
-    {{- if eq $kind "collection" -}}{{- $artworks = partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}{{- end -}}
-    {{- with $artworks -}}
+    {{- with partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
       {{- $first := partialCached "artwork-gallery/info.html" (index . 0) (index . 0).RelPermalink -}}
       {{- $image = $first.large -}}
       {{- $imageAlt = $first.title | default (printf "%s artwork by %s" $cfg.artform $artist) -}}
     {{- end -}}
-    {{- if and $image (eq $kind "album") -}}
-      {{- $image = $image.Filter images.AutoOrient (images.Process "fit 1600x1600 q85 jpg") -}}
+    {{- if and $image (eq .Kind "taxonomy") -}}
+      {{- $image = $image.Filter images.AutoOrient (images.Process (printf "fit %dx%d q%d jpg" $cfg.largeSize $cfg.largeSize $cfg.largeQuality)) -}}
     {{- end -}}
     {{- $result = dict
-      "pageType" (cond (or (eq $kind "album") (eq . $root) (eq .Kind "term")) "ImageGallery" "CollectionPage")
+      "pageType" (cond (eq .Kind "taxonomy") "CollectionPage" "ImageGallery")
       "title" (printf "%s | %s" (.Params.seoTitle | default .Title) $artist)
-      "description" (.Description | default (cond (eq $kind "album")
-          (printf "%s: %s by %s." .Title (cond (eq $count.works 1) "1 work" (printf "%d works" $count.works)) $artist)
-          (printf "Explore %d %s artworks by %s." $count.works (lower $cfg.artform) $artist)))
+      "description" (.Description | default (printf "Explore %d %s artworks by %s." $count.works (lower $cfg.artform) $artist))
       "image" $image
       "imageAlt" $imageAlt
+      "mainEntity" (partial "artwork-gallery/schema-list.html" .)
     -}}
-    {{- if eq $kind "album" -}}
-      {{- $result = merge $result (dict "mainEntity" (partial "artwork-gallery/schema-album.html" .)) -}}
-    {{- else -}}
-      {{- $result = merge $result (dict "mainEntity" (partial "artwork-gallery/schema-list.html" .)) -}}
-    {{- end -}}
     {{- if ne . $root -}}
       {{- $result = merge $result (dict "breadcrumb" (partial "artwork-gallery/schema-breadcrumb.html" .)) -}}
     {{- end -}}
   {{- end -}}
-  {{- $result = merge $result (dict "noindex" $private) -}}
 {{- end -}}
 {{- return $result -}}

@@ -1,8 +1,9 @@
-{{- /* The collection an artwork belongs to for navigation: its first term in
-       the first collection taxonomy it uses, else the folder it sits in.
-       Previous/next, "All work", the lightbox and breadcrumbs follow it. */ -}}
+{{- /* The collection a piece belongs to for navigation: its first series in
+       the first collection taxonomy it uses, else the gallery. Previous/next,
+       the link back, breadcrumbs and the lightbox behind a directly opened
+       piece all follow it. */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
-{{- $home := .Parent -}}
+{{- $home := partialCached "artwork-gallery/root.html" . -}}
 {{- $found := false -}}
 {{- range $cfg.collectionTaxonomies -}}
   {{- if not $found -}}

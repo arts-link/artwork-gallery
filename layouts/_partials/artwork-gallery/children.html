@@ -1,17 +1,10 @@
-{{- /* What a collection lists as cards, in weight order: a section's public
-       sub-collections and albums, or a collection taxonomy's terms. Artworks
-       are shown as tiles instead. */ -}}
+{{- /* What a collection shows as cards: a collection taxonomy's terms (its
+       series), by weight then title. Other collections show none. */ -}}
 {{- $cards := slice -}}
 {{- if eq .Kind "taxonomy" -}}
   {{- range .Pages.ByWeight -}}
-    {{- if not .Params.private -}}{{- $cards = $cards | append . -}}{{- end -}}
-  {{- end -}}
-{{- else if ne .Kind "term" -}}
-  {{- range where .Pages.ByWeight "Type" "artworks" -}}
-    {{- if not .Params.private -}}
-      {{- if ne (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
-        {{- $cards = $cards | append . -}}
-      {{- end -}}
+    {{- if partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
+      {{- $cards = $cards | append . -}}
     {{- end -}}
   {{- end -}}
 {{- end -}}

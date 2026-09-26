@@ -6,7 +6,14 @@
 {{- if ne .Title .Name -}}
   {{- $caption = .Title -}}
 {{- else -}}
-  {{- with .Exif -}}{{- with .Tags.ImageDescription -}}{{- $caption = strings.TrimSpace (string .) -}}{{- end -}}{{- end -}}
+  {{- /* Hugo 0.155 moved image metadata from .Exif to .Meta. */ -}}
+  {{- $description := "" -}}
+  {{- if ge hugo.Version "0.155.0" -}}
+    {{- with .Meta -}}{{- with .Exif.ImageDescription -}}{{- $description = . -}}{{- end -}}{{- end -}}
+  {{- else -}}
+    {{- with .Exif -}}{{- with .Tags.ImageDescription -}}{{- $description = . -}}{{- end -}}{{- end -}}
+  {{- end -}}
+  {{- with $description -}}{{- $caption = strings.TrimSpace (string .) -}}{{- end -}}
   {{- if and (not $caption) (not (findRE `(?i)^(img|dsc|dscn|pict|photo|image|fullsizerender)?[\W_]*\d+[\W_\d]*$` $base)) -}}
     {{- $caption = replaceRE `[_-]+` " " $base | strings.TrimSpace -}}
     {{- $caption = printf "%s%s" (substr $caption 0 1 | upper) (substr $caption 1) -}}

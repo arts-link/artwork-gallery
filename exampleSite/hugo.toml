@@ -1,8 +1,11 @@
 # Example site for the artwork-gallery component. From this folder:
-#   hugo server --themesDir ../..
+#   hugo server
 baseURL = "https://example.org/"
 title = "Example artist"
 theme = ["artwork-gallery"]
+# The component is this repository, two folders up. This only affects the
+# example site; it requires the clone to be named artwork-gallery.
+themesDir = "../.."
 disableKinds = ["rss"]
 
 [taxonomies]

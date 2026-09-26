@@ -1,30 +1,17 @@
 {{- /* Cards for collections.
-         {{< collections >}}                     the top level of the gallery
-         {{< collections path="early-work" >}}   inside one folder collection
-         {{< collections taxonomy="sculpture" >}} the series of one medium
-         {{< collections taxonomies="true" >}}   one card per collection taxonomy
-         {{< collections featured="true" >}}     every page marked `featured: true` */ -}}
+         {{< collections >}}                      one card per collection taxonomy
+         {{< collections taxonomy="sculpture" >}} the series of one medium */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" .Page -}}
-{{- $root := partialCached "artwork-gallery/root.html" .Page -}}
 {{- $cards := slice -}}
-{{- if .Get "featured" -}}
-  {{- range partialCached "artwork-gallery/collections.html" .Page -}}
-    {{- if .Params.featured -}}{{- $cards = $cards | append . -}}{{- end -}}
-  {{- end -}}
-  {{- range $root.RegularPagesRecursive -}}
-    {{- if .Params.featured -}}{{- $cards = $cards | append . -}}{{- end -}}
-  {{- end -}}
-{{- else if .Get "taxonomies" -}}
+{{- with .Get "taxonomy" -}}
+  {{- $taxonomy := site.GetPage (printf "/%s" .) -}}
+  {{- if not $taxonomy -}}{{- errorf "collections shortcode in %s: no taxonomy %q" $.Page.File.Path . -}}{{- end -}}
+  {{- $cards = partialCached "artwork-gallery/children.html" $taxonomy $taxonomy.RelPermalink -}}
+{{- else -}}
   {{- range $cfg.collectionTaxonomies -}}
     {{- with site.GetPage (printf "/%s" .) -}}{{- $cards = $cards | append . -}}{{- end -}}
   {{- end -}}
   {{- $cards = sort $cards "Weight" -}}
-{{- else -}}
-  {{- $collection := $root -}}
-  {{- with .Get "taxonomy" -}}{{- $collection = site.GetPage (printf "/%s" .) -}}{{- end -}}
-  {{- with .Get "path" -}}{{- $collection = site.GetPage (path.Join $root.Path .) -}}{{- end -}}
-  {{- if not $collection -}}{{- errorf "collections shortcode in %s: no such collection" .Page.File.Path -}}{{- end -}}
-  {{- $cards = partialCached "artwork-gallery/children.html" $collection $collection.RelPermalink -}}
 {{- end -}}
 <ul class="ag-cards">
 {{- range $cards }}

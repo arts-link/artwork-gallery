@@ -1,15 +1,14 @@
-{{- /* Embed a selection of artworks on any page.
-         {{< artworks >}}                        every artwork in the gallery
-         {{< artworks collection="early-work" >}} one folder collection (path below the gallery)
-         {{< artworks collection="sculpture/boxes" >}} one series of a collection taxonomy
-         {{< artworks limit="6" >}}              the first six in gallery order
-         {{< artworks status="sold" >}}          only pieces with that status
+{{- /* Embed a selection of pieces on any page.
+         {{< artworks >}}                              every piece
+         {{< artworks collection="sculpture/boxes" >}} one series
+         {{< artworks limit="6" >}}                    the first six in gallery order
+         {{< artworks status="sold" >}}                only pieces with that status
          {{< artworks year="2018" limit="4" >}}
-       Each tile links to the artwork's own page. */ -}}
+       Each tile links to the piece's own page. */ -}}
 {{- $pages := partialCached "artwork-gallery/all-artworks.html" .Page -}}
+{{- $collection := partialCached "artwork-gallery/root.html" .Page -}}
 {{- with .Get "collection" -}}
-  {{- $root := partialCached "artwork-gallery/root.html" $.Page -}}
-  {{- $collection := site.GetPage (path.Join $root.Path .) | default (site.GetPage (printf "/%s" .)) -}}
+  {{- $collection = site.GetPage (printf "/%s" (strings.Trim . "/")) -}}
   {{- if not $collection -}}{{- errorf "artworks shortcode in %s: no collection %q" $.Page.File.Path . -}}{{- end -}}
   {{- $pages = partialCached "artwork-gallery/artworks.html" $collection $collection.RelPermalink -}}
 {{- end -}}
@@ -18,6 +17,6 @@
 {{- with .Get "limit" -}}{{- $pages = first (int .) $pages -}}{{- end -}}
 <ul class="gallery gallery--embed">
 {{- range $i, $p := $pages }}
-{{ partial "artwork-gallery/tile.html" (dict "record" (partial "artwork-gallery/record.html" (dict "page" $p "index" $i)) "eager" false) }}
+{{ partial "artwork-gallery/tile.html" (dict "record" (partial "artwork-gallery/record.html" (dict "page" $p "index" $i "collection" $collection)) "eager" false) }}
 {{- end }}
 </ul>

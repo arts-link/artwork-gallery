@@ -1,25 +1,12 @@
-{{- /* Every public collection: sections below the gallery root (depth first),
-       then each collection taxonomy and its terms. */ -}}
+{{- /* Every collection taxonomy page and its series, for sitemaps and
+       indexes. The gallery section itself is not included. */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $found := slice -}}
-{{- $queue := slice (partialCached "artwork-gallery/root.html" .) -}}
-{{- range seq 12 -}}
-  {{- $next := slice -}}
-  {{- range $queue -}}
-    {{- range where .Sections.ByWeight "Type" "artworks" -}}
-      {{- if not .Params.private -}}
-        {{- $found = $found | append . -}}
-        {{- $next = $next | append . -}}
-      {{- end -}}
-    {{- end -}}
-  {{- end -}}
-  {{- $queue = $next -}}
-{{- end -}}
 {{- range $cfg.collectionTaxonomies -}}
   {{- with site.GetPage (printf "/%s" .) -}}
     {{- $found = $found | append . -}}
-    {{- range .Pages.ByWeight -}}
-      {{- if not .Params.private -}}{{- $found = $found | append . -}}{{- end -}}
+    {{- range partialCached "artwork-gallery/children.html" . .RelPermalink -}}
+      {{- $found = $found | append . -}}
     {{- end -}}
   {{- end -}}
 {{- end -}}

@@ -1,8 +1,7 @@
-{{- /* A collection's body: its sub-collections and albums as cards, then its
-       artworks as a grid. The first batch of artworks is plain HTML; the rest
-       arrives as visitors scroll. Every tile is a real link to its artwork
-       page, so the grid works without JavaScript. Section pages use it; a
-       home template can call it when the home page is the gallery root. */ -}}
+{{- /* A collection's body: its intro text, its series as cards (on a
+       collection taxonomy page), then its pieces as a grid. The first batch of
+       pieces is plain HTML; the rest arrives as visitors scroll. Every tile is
+       a real link to its piece's page, so the grid works without JavaScript. */ -}}
 {{- $cards := partialCached "artwork-gallery/children.html" . .RelPermalink -}}
 {{- $batches := partialCached "artwork-gallery/batches.html" . .RelPermalink }}
 {{- with .Content }}

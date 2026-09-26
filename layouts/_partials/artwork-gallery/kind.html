@@ -1,13 +1,7 @@
-{{- /* What a page in the gallery is:
-         collection  a folder with _index.md, or a term of a collection
-                     taxonomy; lists what is inside it
-         album       a page marked `album: true`: a set of photos with no
-                     page of their own
-         artwork     a page for one piece; extra photos are views of it */ -}}
+{{- /* What a gallery page is: "collection" for the gallery section and for
+       collection taxonomy and term pages, "artwork" for a piece. */ -}}
 {{- $kind := "artwork" -}}
-{{- if or .IsSection .IsHome (eq .Kind "taxonomy") (eq .Kind "term") -}}
+{{- if or .IsSection (eq .Kind "taxonomy") (eq .Kind "term") -}}
   {{- $kind = "collection" -}}
-{{- else if .Params.album -}}
-  {{- $kind = "album" -}}
 {{- end -}}
 {{- return $kind -}}

@@ -1,5 +1,5 @@
-{{- /* ItemList for a collection page: its artworks, then its sub-collections
-       and albums. */ -}}
+{{- /* ItemList for a collection page: its pieces, or for a collection
+       taxonomy, its series. */ -}}
 {{- $items := slice -}}
 {{- range partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
   {{- $items = $items | append (dict "@type" "ListItem" "position" (add (len $items) 1) "item" (partial "artwork-gallery/schema-artwork.html" .)) -}}
@@ -7,10 +7,11 @@
 {{- range partialCached "artwork-gallery/children.html" . .RelPermalink -}}
   {{- $items = $items | append (dict "@type" "ListItem" "position" (add (len $items) 1) "name" .Title "url" .Permalink) -}}
 {{- end -}}
+{{- $artist := site.Params.artist | default site.Title -}}
 {{- return dict
   "@type" "ItemList"
   "@id" (printf "%s#artworks" .Permalink)
-  "name" (cond (eq . (partialCached "artwork-gallery/root.html" .)) (printf "Artwork by %s" (site.Params.artist | default site.Title)) (printf "%s by %s" .Title (site.Params.artist | default site.Title)))
+  "name" (cond (eq . (partialCached "artwork-gallery/root.html" .)) (printf "Artwork by %s" $artist) (printf "%s by %s" .Title $artist))
   "numberOfItems" (len $items)
   "itemListElement" $items
 -}}

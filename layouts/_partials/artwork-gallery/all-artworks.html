@@ -1,13 +1,3 @@
-{{- /* Every public artwork page, each once, collection by collection. */ -}}
-{{- $all := slice -}}
-{{- $seen := dict -}}
+{{- /* Every public piece, in gallery order. */ -}}
 {{- $root := partialCached "artwork-gallery/root.html" . -}}
-{{- range slice $root | append (partialCached "artwork-gallery/collections.html" . ) -}}
-  {{- range partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
-    {{- if not (index $seen .RelPermalink) -}}
-      {{- $all = $all | append . -}}
-      {{- $seen = merge $seen (dict .RelPermalink true) -}}
-    {{- end -}}
-  {{- end -}}
-{{- end -}}
-{{- return $all -}}
+{{- return partialCached "artwork-gallery/artworks.html" $root $root.RelPermalink -}}

@@ -1,13 +1,11 @@
-{{- /* The artwork pages directly in one collection, in gallery order. Call with
+{{- /* The public pieces shown in one collection, in order. Call with
        partialCached "artwork-gallery/artworks.html" $collection $collection.RelPermalink
-       - a section: its artwork pages by weight, then date, then title
+       - the gallery section: every piece, by weight, then date, then title
        - a term of a collection taxonomy: its pieces by `<taxonomy>_weight`
-         (e.g. sculpture_weight), then weight
-       - a taxonomy page: none; it lists its terms as cards */ -}}
+         (e.g. sculpture_weight), then weight; pieces without one go last
+       - a collection taxonomy page: none; it shows its terms as cards */ -}}
 {{- $candidates := slice -}}
 {{- if eq .Kind "term" -}}
-  {{- /* Series weight first, then the piece's own weight; pieces without one
-         go after those with one, as Hugo does for pages. */ -}}
   {{- $keyed := slice -}}
   {{- with index site.Taxonomies .Data.Plural -}}
     {{- with index . $.Data.Term -}}
@@ -19,18 +17,16 @@
     {{- end -}}
   {{- end -}}
   {{- range sort $keyed "key" -}}{{- $candidates = $candidates | append .page -}}{{- end -}}
-{{- else if ne .Kind "taxonomy" -}}
+{{- else if .IsSection -}}
   {{- $candidates = .RegularPages.ByWeight -}}
 {{- end -}}
 {{- $pages := slice -}}
 {{- range where $candidates "Type" "artworks" -}}
-  {{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
-    {{- $pages = $pages | append . -}}
-  {{- end -}}
+  {{- if not .Params.private -}}{{- $pages = $pages | append . -}}{{- end -}}
 {{- end -}}
 {{- /* Two pieces with the same weight still build; the order between them
        falls back to date and title, and the build log says so. */ -}}
-{{- if ne .Kind "term" -}}
+{{- if .IsSection -}}
   {{- $seen := dict -}}
   {{- range $p := $pages -}}
     {{- with $p.Weight -}}

@@ -39,8 +39,7 @@ def page(path, text):
 if os.path.isdir(C):
     shutil.rmtree(C)
 page(f'{C}/_index.md', '---\ntitle: Example artist\n---\n'
-     'Media:\n\n{{< collections taxonomies="true" >}}\n\n'
-     'Folder collections and albums:\n\n{{< collections >}}\n')
+     '{{< collections >}}\n')
 page(f'{C}/gallery/_index.md', '''---
 title: Work
 breadcrumb: Work
@@ -51,7 +50,7 @@ cascade:
     publishResources: false
 ---
 Every piece has its own folder here. Media such as Sculpture and Collage are
-taxonomies, so a piece joins a series by listing it in its front matter.
+taxonomies: a piece joins a series by listing it in its front matter.
 ''')
 
 
@@ -105,21 +104,8 @@ for n in range(1, 3):
     piece(f'garden-{n}', f'Garden {n}', 40 + n, [('artwork.jpg', 1400, 1100, None)],
           'collage: ["night-garden"]\n')
 
-# A folder collection still works alongside the taxonomies.
-page(f'{C}/gallery/early-work/_index.md', '---\ntitle: Early work\nweight: 50\n---\n')
-for n in range(1, 3):
-    page(f'{C}/gallery/early-work/sketch-{n}/index.md', f'---\ntitle: "Sketch {n}"\nweight: {n}\n---\n')
-    img(f'{C}/gallery/early-work/sketch-{n}/artwork.jpg', 1200, 1500, f'sketch {n}', (170, 150, 110))
-
-# An album: photos with no pages of their own, only when asked for.
-page(f'{C}/gallery/studio-visit/index.md', '---\ntitle: Studio visit\nweight: 60\nalbum: true\ngrid: justified\n---\n')
-for n, (w, h) in enumerate([(1600, 1000), (1000, 1500), (1500, 1100)], 1):
-    img(f'{C}/gallery/studio-visit/visit-{n}.jpg', w, h, f'visit {n}', (120, 140, 160))
-
-# A private collection: built, but unlisted and marked noindex.
-page(f'{C}/gallery/studio/_index.md', '---\ntitle: Studio\nweight: 70\nprivate: true\n---\n')
-page(f'{C}/gallery/studio/wip/index.md', '---\ntitle: Work in progress\nweight: 1\n---\n')
-img(f'{C}/gallery/studio/wip/artwork.jpg', 1200, 1200, 'wip', (200, 200, 120))
+# A private piece: built and reachable by URL, but unlisted and noindex.
+piece('work-in-progress', 'Work in progress', 90, [('artwork.jpg', 1200, 1200, None)], 'private: true\n')
 
 page(f'{C}/about.md', '---\ntitle: About\n---\nInside Sculpture:\n\n'
      '{{< collections taxonomy="sculpture" >}}\n\nSold pieces:\n\n{{< artworks status="sold" >}}\n\n'

@@ -1,5 +1,6 @@
 {{- /* The small, browser-safe description of one gallery tile. The first batch
-       is rendered as HTML; later batches are the same records as JSON. */ -}}
+       is rendered as HTML; later batches are the same records as JSON.
+       Context: dict "page" <piece> "index" <int> "collection" <collection> */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $info := partialCached "artwork-gallery/info.html" .page .page.RelPermalink -}}
 {{- $record := dict
@@ -22,7 +23,7 @@
   {{- $record = merge $record (dict "views" $views) -}}
 {{- end -}}
 {{- /* A justified grid keeps each image's shape instead of the square crop. */ -}}
-{{- if eq (.page.Parent.Params.grid | default $cfg.grid) "justified" -}}
+{{- if eq (.collection.Params.grid | default $cfg.grid) "justified" -}}
   {{- $spec := printf "fit %dx%d" (div (mul $cfg.thumbSize 3) 2) (div (mul $cfg.thumbSize 3) 2) -}}
   {{- $jpg := $info.source.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $spec $cfg.thumbQuality)) -}}
   {{- $webp := $info.source.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $spec $cfg.webpThumbQuality)) -}}
