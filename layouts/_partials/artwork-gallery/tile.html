@@ -5,7 +5,8 @@
          data-image="{{ $r.image }}"
          data-title="{{ $r.title }}" data-meta="{{ $r.meta }}"
          data-alt="{{ $r.alt }}"
-         data-document-title="{{ $r.documentTitle }}">
+         data-document-title="{{ $r.documentTitle }}"
+         {{- with $r.views }} data-views="{{ . | jsonify }}"{{ end }}>
         <picture>
           <source srcset="{{ $r.thumbWebp }}" type="image/webp">
           <img src="{{ $r.thumb }}" alt="{{ $r.alt }}"

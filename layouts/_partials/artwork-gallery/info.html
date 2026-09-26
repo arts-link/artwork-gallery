@@ -34,6 +34,23 @@
 {{- $large := $src.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $largeSpec $cfg.largeQuality)) -}}
 {{- $largeWebp := $src.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality)) -}}
 
+{{- /* Other photos in the folder are further views of the piece, in the
+       folder's display order, each with a caption. */ -}}
+{{- $views := slice -}}
+{{- range partial "artwork-gallery/images.html" . -}}
+  {{- if ne .Name $src.Name -}}
+    {{- $caption := partial "artwork-gallery/caption.html" . -}}
+    {{- $views = $views | append (dict
+      "caption" $caption
+      "alt" (.Params.alt | default (cond (ne $caption "") (printf "%s — %s" $displayTitle $caption) $alt))
+      "thumb" (.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $thumbSpec $cfg.thumbQuality)))
+      "thumbWebp" (.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $thumbSpec $cfg.webpThumbQuality)))
+      "large" (.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $largeSpec $cfg.largeQuality)))
+      "largeWebp" (.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality)))
+    ) -}}
+  {{- end -}}
+{{- end -}}
+
 {{- /* Sharing card: social.* when the folder has one, otherwise the artwork
        uncropped on a 1200 x 630 field of its own dominant colour. */ -}}
 {{- $social := .Resources.GetMatch "social.*" -}}
@@ -62,4 +79,5 @@
   "source" $src
   "largeWebp" $largeWebp
   "social" $social
+  "views" $views
 -}}

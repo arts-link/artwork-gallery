@@ -1,0 +1,12 @@
+{{- /* The collection an artwork belongs to for navigation: its first term in
+       the first collection taxonomy it uses, else the folder it sits in.
+       Previous/next, "All work", the lightbox and breadcrumbs follow it. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $home := .Parent -}}
+{{- $found := false -}}
+{{- range $cfg.collectionTaxonomies -}}
+  {{- if not $found -}}
+    {{- with $.GetTerms . -}}{{- $home = index . 0 -}}{{- $found = true -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $home -}}

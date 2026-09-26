@@ -13,7 +13,8 @@
 {{- $artist := site.Params.artist | default site.Title -}}
 {{- $root := partialCached "artwork-gallery/root.html" . -}}
 {{- $result := dict -}}
-{{- if or (eq . $root) (and (.IsDescendant $root) (eq .Type "artworks")) -}}
+{{- $isTaxonomy := and (in (slice "taxonomy" "term") .Kind) (in $cfg.collectionTaxonomies .Data.Plural) -}}
+{{- if or (eq . $root) (and (.IsDescendant $root) (eq .Type "artworks")) $isTaxonomy -}}
   {{- $kind := partialCached "artwork-gallery/kind.html" . .RelPermalink -}}
   {{- $private := false -}}
   {{- range .Ancestors | append . -}}{{- if .Params.private -}}{{- $private = true -}}{{- end -}}{{- end -}}
@@ -43,7 +44,7 @@
       {{- $image = $image.Filter images.AutoOrient (images.Process "fit 1600x1600 q85 jpg") -}}
     {{- end -}}
     {{- $result = dict
-      "pageType" (cond (eq $kind "album") "ImageGallery" (cond (eq . $root) "ImageGallery" "CollectionPage"))
+      "pageType" (cond (or (eq $kind "album") (eq . $root) (eq .Kind "term")) "ImageGallery" "CollectionPage")
       "title" (printf "%s | %s" (.Params.seoTitle | default .Title) $artist)
       "description" (.Description | default (cond (eq $kind "album")
           (printf "%s: %s by %s." .Title (cond (eq $count.works 1) "1 work" (printf "%d works" $count.works)) $artist)

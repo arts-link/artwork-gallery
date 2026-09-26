@@ -8,7 +8,7 @@
 {{- if not $cover -}}{{- with .Params.featured_image -}}{{- $cover = $all.GetMatch . -}}{{- end -}}{{- end -}}
 {{- if not $cover -}}{{- $cover = $all.GetMatch "*feature*" -}}{{- end -}}
 {{- if not $cover -}}{{- with partial "artwork-gallery/images.html" . -}}{{- $cover = index . 0 -}}{{- end -}}{{- end -}}
-{{- if and (not $cover) .IsSection -}}
+{{- if and (not $cover) (eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "collection") -}}
   {{- $first := partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
   {{- $first = (partialCached "artwork-gallery/children.html" . .RelPermalink) | append $first -}}
   {{- with $first -}}{{- $cover = partialCached "artwork-gallery/cover.html" (index . 0) (index . 0).RelPermalink -}}{{- end -}}

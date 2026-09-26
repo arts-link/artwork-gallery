@@ -1,0 +1,15 @@
+{{- /* The caption for one image resource: its `resources` title, else its
+       EXIF description, else its file name made readable ("detail_1" becomes
+       "Detail 1"). Camera names such as IMG_3221 or DSC00991 give nothing. */ -}}
+{{- $caption := "" -}}
+{{- $base := path.BaseName .Name -}}
+{{- if ne .Title .Name -}}
+  {{- $caption = .Title -}}
+{{- else -}}
+  {{- with .Exif -}}{{- with .Tags.ImageDescription -}}{{- $caption = strings.TrimSpace (string .) -}}{{- end -}}{{- end -}}
+  {{- if and (not $caption) (not (findRE `(?i)^(img|dsc|dscn|pict|photo|image|fullsizerender)?[\W_]*\d+[\W_\d]*$` $base)) -}}
+    {{- $caption = replaceRE `[_-]+` " " $base | strings.TrimSpace -}}
+    {{- $caption = printf "%s%s" (substr $caption 0 1 | upper) (substr $caption 1) -}}
+  {{- end -}}
+{{- end -}}
+{{- return $caption -}}

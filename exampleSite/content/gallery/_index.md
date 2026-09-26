@@ -7,4 +7,5 @@ cascade:
   build:
     publishResources: false
 ---
-Collections, albums and single artworks, nested.
+Every piece has its own folder here. Media such as Sculpture and Collage are
+taxonomies, so a piece joins a series by listing it in its front matter.

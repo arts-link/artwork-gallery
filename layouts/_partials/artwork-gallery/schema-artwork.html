@@ -17,5 +17,15 @@
     "creditText" (site.Params.artist | default site.Title)
     "creator" (dict "@id" $artistID))
 -}}
+{{- with $info.views -}}
+  {{- $images := slice (index $artwork "image") -}}
+  {{- range . -}}
+    {{- $object := dict "@type" "ImageObject" "contentUrl" .large.Permalink "thumbnailUrl" .thumb.Permalink
+        "creditText" (site.Params.artist | default site.Title) "creator" (dict "@id" $artistID) -}}
+    {{- with .caption -}}{{- $object = merge $object (dict "caption" .) -}}{{- end -}}
+    {{- $images = $images | append $object -}}
+  {{- end -}}
+  {{- $artwork = merge $artwork (dict "image" $images) -}}
+{{- end -}}
 {{- with $info.status -}}{{- $artwork = merge $artwork (dict "description" .) -}}{{- end -}}
 {{- return $artwork -}}

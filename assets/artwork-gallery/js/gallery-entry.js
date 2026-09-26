@@ -12,8 +12,7 @@
     document.documentElement.removeAttribute('aria-busy');
   }
   var main = document.querySelector('main');
-  if (!main || !lightboxSrc || !progressiveSrc ||
-      !location.pathname.startsWith(galleryPath)) {
+  if (!main || !lightboxSrc || !progressiveSrc) {
     revealFallback();
     return;
   }

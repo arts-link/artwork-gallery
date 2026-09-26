@@ -25,7 +25,8 @@
   </nav>
 {{- else }}
 {{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
-{{- $artworks := partialCached "artwork-gallery/artworks.html" .Parent .Parent.RelPermalink -}}
+{{- $home := partialCached "artwork-gallery/home-collection.html" . .RelPermalink -}}
+{{- $artworks := partialCached "artwork-gallery/artworks.html" $home $home.RelPermalink -}}
 {{- $previous := false -}}{{- $next := false -}}
 {{- range $i, $p := $artworks -}}
   {{- if eq $p $ -}}
@@ -40,6 +41,36 @@
       <img class="artwork__image" src="{{ $info.large.RelPermalink }}" alt="{{ $info.alt }}"
            width="{{ $info.large.Width }}" height="{{ $info.large.Height }}" fetchpriority="high">
     </picture>
+{{- with $info.views }}
+{{- $layout := $.Params.views | default (partialCached "artwork-gallery/config.html" $).views }}
+{{- if eq $layout "stack" }}
+    <div class="artwork__views artwork__views--stack">
+{{- range . }}
+      <figure>
+        <picture>
+          <source srcset="{{ .largeWebp.RelPermalink }}" type="image/webp">
+          <img src="{{ .large.RelPermalink }}" alt="{{ .alt }}" width="{{ .large.Width }}" height="{{ .large.Height }}" loading="lazy">
+        </picture>
+        {{- with .caption }}<figcaption>{{ . }}</figcaption>{{ end }}
+      </figure>
+{{- end }}
+    </div>
+{{- else }}
+    <ul class="artwork__views" aria-label="More views">
+{{- range . }}
+      <li>
+        <a href="{{ .large.RelPermalink }}">
+          <picture>
+            <source srcset="{{ .thumbWebp.RelPermalink }}" type="image/webp">
+            <img src="{{ .thumb.RelPermalink }}" alt="{{ .alt }}" width="{{ .thumb.Width }}" height="{{ .thumb.Height }}" loading="lazy">
+          </picture>
+          {{- with .caption }}<span>{{ . }}</span>{{ end }}
+        </a>
+      </li>
+{{- end }}
+    </ul>
+{{- end }}
+{{- end }}
 {{- with $info.status }}
     <p class="artwork__meta">{{ . }}</p>
 {{- end }}
@@ -48,7 +79,7 @@
 {{- end }}
     <nav class="artwork__nav" aria-label="Artwork">
       {{ with $previous }}<a rel="prev" href="{{ .RelPermalink }}">Previous</a>{{ else }}<span></span>{{ end }}
-      <a href="{{ .Parent.RelPermalink }}">All work</a>
+      <a href="{{ $home.RelPermalink }}">{{ if eq $home .Parent }}All work{{ else }}{{ $home.LinkTitle }}{{ end }}</a>
       {{ with $next }}<a rel="next" href="{{ .RelPermalink }}">Next</a>{{ else }}<span></span>{{ end }}
     </nav>
   </article>
@@ -60,7 +91,7 @@
 <script src="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
 {{- else }}
 <script src="{{ (partial "artwork-gallery/script.html" "gallery-entry").RelPermalink }}"
-        data-gallery-path="{{ .Parent.RelPermalink }}"
+        data-gallery-path="{{ (partialCached "artwork-gallery/home-collection.html" . .RelPermalink).RelPermalink }}"
         data-progressive="{{ (partial "artwork-gallery/script.html" "gallery-progressive").RelPermalink }}"
         data-lightbox="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
 {{- end }}

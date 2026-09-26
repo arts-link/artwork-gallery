@@ -1,5 +1,5 @@
 ---
 title: Studio
-weight: 20
+weight: 70
 private: true
 ---

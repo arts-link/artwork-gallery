@@ -1,0 +1,12 @@
+{{- /* A collection taxonomy page (e.g. /sculpture/) lists its terms as cards;
+       a term page (e.g. /sculpture/boxes/) shows its pieces as the gallery
+       grid. Used only for taxonomies the site gives `type: artworks` (see the
+       README), so tag pages from other themes are left alone. */ -}}
+{{ define "main" }}
+  <h1 class="page-title">{{ .Title }}</h1>
+{{ partial "artwork-gallery/collection.html" . }}
+{{ end }}
+
+{{ define "scripts" }}
+{{ partial "artwork-gallery/collection-scripts.html" . }}
+{{ end }}

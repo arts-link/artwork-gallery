@@ -1,20 +1,45 @@
-{{- /* The artwork pages directly inside one collection, in gallery order
-       (weight, then date, then title). Call with
-       partialCached "artwork-gallery/artworks.html" $collection $collection.RelPermalink */ -}}
+{{- /* The artwork pages directly in one collection, in gallery order. Call with
+       partialCached "artwork-gallery/artworks.html" $collection $collection.RelPermalink
+       - a section: its artwork pages by weight, then date, then title
+       - a term of a collection taxonomy: its pieces by `<taxonomy>_weight`
+         (e.g. sculpture_weight), then weight
+       - a taxonomy page: none; it lists its terms as cards */ -}}
+{{- $candidates := slice -}}
+{{- if eq .Kind "term" -}}
+  {{- /* Series weight first, then the piece's own weight; pieces without one
+         go after those with one, as Hugo does for pages. */ -}}
+  {{- $keyed := slice -}}
+  {{- with index site.Taxonomies .Data.Plural -}}
+    {{- with index . $.Data.Term -}}
+      {{- range . -}}
+        {{- $series := cond (eq .Weight 0) 999999 .Weight -}}
+        {{- $own := cond (eq .Page.Weight 0) 999999 .Page.Weight -}}
+        {{- $keyed = $keyed | append (dict "page" .Page "key" (add (mul $series 1000000) $own)) -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- range sort $keyed "key" -}}{{- $candidates = $candidates | append .page -}}{{- end -}}
+{{- else if ne .Kind "taxonomy" -}}
+  {{- $candidates = .RegularPages.ByWeight -}}
+{{- end -}}
 {{- $pages := slice -}}
-{{- range where .RegularPages.ByWeight "Type" "artworks" -}}
+{{- range where $candidates "Type" "artworks" -}}
   {{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
     {{- $pages = $pages | append . -}}
   {{- end -}}
 {{- end -}}
-{{- $seen := dict -}}
-{{- range $p := $pages -}}
-  {{- with $p.Weight -}}
-    {{- $key := string . -}}
-    {{- with index $seen $key -}}
-      {{- errorf "artwork-gallery: %s and %s both use weight %s" . $p.File.Path $key -}}
+{{- /* Two pieces with the same weight still build; the order between them
+       falls back to date and title, and the build log says so. */ -}}
+{{- if ne .Kind "term" -}}
+  {{- $seen := dict -}}
+  {{- range $p := $pages -}}
+    {{- with $p.Weight -}}
+      {{- $key := string . -}}
+      {{- with index $seen $key -}}
+        {{- warnf "artwork-gallery: %s and %s both use weight %s" . $p.File.Path $key -}}
+      {{- end -}}
+      {{- $seen = merge $seen (dict $key $p.File.Path) -}}
     {{- end -}}
-    {{- $seen = merge $seen (dict $key $p.File.Path) -}}
   {{- end -}}
 {{- end -}}
 {{- return $pages -}}

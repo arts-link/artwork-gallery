@@ -1,7 +1,10 @@
-{{- /* Cards for the collections and albums inside a collection.
+{{- /* Cards for collections.
          {{< collections >}}                     the top level of the gallery
-         {{< collections path="sculpture" >}}    inside one collection
+         {{< collections path="early-work" >}}   inside one folder collection
+         {{< collections taxonomy="sculpture" >}} the series of one medium
+         {{< collections taxonomies="true" >}}   one card per collection taxonomy
          {{< collections featured="true" >}}     every page marked `featured: true` */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" .Page -}}
 {{- $root := partialCached "artwork-gallery/root.html" .Page -}}
 {{- $cards := slice -}}
 {{- if .Get "featured" -}}
@@ -11,10 +14,16 @@
   {{- range $root.RegularPagesRecursive -}}
     {{- if .Params.featured -}}{{- $cards = $cards | append . -}}{{- end -}}
   {{- end -}}
+{{- else if .Get "taxonomies" -}}
+  {{- range $cfg.collectionTaxonomies -}}
+    {{- with site.GetPage (printf "/%s" .) -}}{{- $cards = $cards | append . -}}{{- end -}}
+  {{- end -}}
+  {{- $cards = sort $cards "Weight" -}}
 {{- else -}}
   {{- $collection := $root -}}
+  {{- with .Get "taxonomy" -}}{{- $collection = site.GetPage (printf "/%s" .) -}}{{- end -}}
   {{- with .Get "path" -}}{{- $collection = site.GetPage (path.Join $root.Path .) -}}{{- end -}}
-  {{- if not $collection -}}{{- errorf "collections shortcode in %s: no collection %q" .Page.File.Path (.Get "path") -}}{{- end -}}
+  {{- if not $collection -}}{{- errorf "collections shortcode in %s: no such collection" .Page.File.Path -}}{{- end -}}
   {{- $cards = partialCached "artwork-gallery/children.html" $collection $collection.RelPermalink -}}
 {{- end -}}
 <ul class="ag-cards">

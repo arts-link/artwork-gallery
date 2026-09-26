@@ -1,6 +1,10 @@
 ---
 title: Example artist
 ---
-Collections:
+Media:
+
+{{< collections taxonomies="true" >}}
+
+Folder collections and albums:
 
 {{< collections >}}

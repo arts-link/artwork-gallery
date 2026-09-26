@@ -15,6 +15,7 @@
     link.setAttribute('data-meta', text(record.meta));
     link.setAttribute('data-alt', text(record.alt));
     link.setAttribute('data-document-title', record.documentTitle);
+    if (record.views) link.setAttribute('data-views', JSON.stringify(record.views));
     var picture = document.createElement('picture');
     var source = document.createElement('source');
     source.srcset = record.thumbWebp;

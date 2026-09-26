@@ -2,14 +2,20 @@
        A collection's crumb is its `breadcrumb` front matter, else its title. */ -}}
 {{- $items := slice (dict "@type" "ListItem" "position" 1 "name" "Home" "item" site.Home.Permalink) -}}
 {{- $trail := slice -}}
-{{- range .Ancestors.Reverse -}}
+{{- $isArtwork := eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
+{{- $ancestors := .Ancestors.Reverse -}}
+{{- if $isArtwork -}}
+  {{- $home := partialCached "artwork-gallery/home-collection.html" . .RelPermalink -}}
+  {{- $ancestors = $home.Ancestors.Reverse | append $home -}}
+{{- end -}}
+{{- range $ancestors -}}
   {{- if not .IsHome -}}{{- $trail = $trail | append . -}}{{- end -}}
 {{- end -}}
 {{- range $trail -}}
   {{- $items = $items | append (dict "@type" "ListItem" "position" (add (len $items) 1) "name" (.Params.breadcrumb | default .LinkTitle) "item" .Permalink) -}}
 {{- end -}}
 {{- $name := .Params.breadcrumb | default .LinkTitle -}}
-{{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "artwork" -}}
+{{- if $isArtwork -}}
   {{- $name = (partialCached "artwork-gallery/info.html" . .RelPermalink).displayTitle -}}
 {{- end -}}
 {{- $items = $items | append (dict "@type" "ListItem" "position" (add (len $items) 1) "name" $name "item" .Permalink) -}}

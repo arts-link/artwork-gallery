@@ -3,7 +3,17 @@
 baseURL = "https://example.org/"
 title = "Example artist"
 theme = ["artwork-gallery"]
-disableKinds = ["taxonomy", "term", "rss"]
+disableKinds = ["rss"]
+
+[taxonomies]
+  sculpture = "sculpture"
+  collage = "collage"
+
+# Collection taxonomies use the component's layouts.
+[[cascade]]
+  type = "artworks"
+  [cascade.target]
+    path = "{/sculpture,/sculpture/**,/collage,/collage/**}"
 
 [params]
   artist = "Example Artist"
@@ -11,4 +21,8 @@ disableKinds = ["taxonomy", "term", "rss"]
 [params.artworkGallery]
   section = "gallery"
   artform = "Artwork"
-  batchSize = 2
+  batchSize = 4
+  collectionTaxonomies = ["sculpture", "collage"]
+
+[imaging.exif]
+  includeFields = "ImageDescription"

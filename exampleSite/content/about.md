@@ -3,8 +3,12 @@ title: About
 ---
 Inside Sculpture:
 
-{{< collections path="sculpture" >}}
+{{< collections taxonomy="sculpture" >}}
 
 Sold pieces:
 
 {{< artworks status="sold" >}}
+
+Boxes:
+
+{{< artworks collection="sculpture/boxes" >}}

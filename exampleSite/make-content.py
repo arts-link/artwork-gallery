@@ -39,7 +39,8 @@ def page(path, text):
 if os.path.isdir(C):
     shutil.rmtree(C)
 page(f'{C}/_index.md', '---\ntitle: Example artist\n---\n'
-     'Collections:\n\n{{< collections >}}\n')
+     'Media:\n\n{{< collections taxonomies="true" >}}\n\n'
+     'Folder collections and albums:\n\n{{< collections >}}\n')
 page(f'{C}/gallery/_index.md', '''---
 title: Work
 breadcrumb: Work
@@ -49,52 +50,78 @@ cascade:
   build:
     publishResources: false
 ---
-Collections, albums and single artworks, nested.
+Every piece has its own folder here. Media such as Sculpture and Collage are
+taxonomies, so a piece joins a series by listing it in its front matter.
 ''')
 
-# Single artworks at the top level.
-for n, (title, status) in enumerate([('Moth', 'sold'), ('Lantern', ''), ('', '')], 1):
-    slug = title.lower() or f'untitled-{n}'
-    page(f'{C}/gallery/{slug}/index.md', f'---\ntitle: "{title}"\nweight: {n}\n'
-         + (f'status: {status}\n' if status else '') + '---\n')
-    img(f'{C}/gallery/{slug}/artwork.jpg', 1400, 1800, title or 'untitled', (120 + n * 30, 90, 70))
 
-# A collection holding two albums and a sub-collection of artworks.
-page(f'{C}/gallery/sculpture/_index.md', '---\ntitle: Sculpture\nweight: 10\n'
-     'description: Boxes, vessels and stele.\n---\nThree-dimensional work.\n')
-page(f'{C}/gallery/sculpture/boxes/index.md', '''---
-title: Boxes
-weight: 1
-resources:
-  - src: box-3.jpg
-    title: Box with keys
-    params:
-      cover: true
-  - src: box-1.jpg
-    title: Tin box, 2019
-    params:
-      status: sold
----
-Assemblage boxes. Captions come from `resources` titles, or from the photo's
-EXIF description (box 2).
-''')
+def piece(slug, title, weight, images, extra=''):
+    """images: list of (filename, w, h, caption-in-EXIF or None)."""
+    page(f'{C}/gallery/{slug}/index.md',
+         f'---\ntitle: "{title}"\nweight: {weight}\n{extra}---\n')
+    for n, (name, w, h, exif) in enumerate(images):
+        img(f'{C}/gallery/{slug}/{name}', w, h, f'{title or slug} {n + 1}',
+            (60 + (weight * 37) % 150, 90 + n * 25, 140 - n * 20), caption=exif)
+
+
+# Single pieces.
+piece('moth', 'Moth', 1, [('artwork.jpg', 1400, 1800, None)], 'status: sold\n')
+piece('untitled-3', '', 3, [('artwork.jpg', 1400, 1400, None)])
+# Camera file names, no artwork.jpg: the first file is the main image and the
+# second is a view without a caption.
+piece('lantern', 'Lantern', 2, [('IMG_3220.jpg', 1400, 1800, None), ('IMG_3221.jpg', 1400, 1800, None)])
+
+# Sculpture: boxes, with one piece photographed several ways.
+page(f'{C}/sculpture/_index.md', '---\ntitle: Sculpture\nweight: 1\n---\nBoxes, vessels and stele.\n')
+page(f'{C}/sculpture/boxes/_index.md', '---\ntitle: Boxes\nweight: 1\n---\nAssemblage boxes.\n')
+page(f'{C}/sculpture/vessels/_index.md', '---\ntitle: Vessels\nweight: 2\ngrid: justified\n---\n')
+page(f'{C}/sculpture/stele/_index.md', '---\ntitle: Stele\nweight: 3\n---\n')
 for n in range(1, 5):
-    img(f'{C}/gallery/sculpture/boxes/box-{n}.jpg', 1600, 1200 if n % 2 else 1600,
-        f'box {n}', (60, 110 + n * 25, 140), caption='Caption from EXIF' if n == 2 else None)
-page(f'{C}/gallery/sculpture/vessels/index.md', '---\ntitle: Vessels\nweight: 2\ngrid: justified\n---\n')
+    views = [('artwork.jpg', 1600, 1200, None)]
+    extra = f'sculpture: ["boxes"]\nsculpture_weight: {n}\n'
+    if n == 2:
+        views += [('detail_1.jpg', 1200, 1200, None), ('detail_2.jpg', 1200, 1600, None),
+                  ('back.jpg', 1600, 1200, 'Back, from EXIF')]
+        extra += 'resources:\n  - src: detail_2.jpg\n    title: Lid open\n'
+    piece(f'box-{n}', f'Box {n}', 10 + n, views, extra)
 for n, (w, h) in enumerate([(1600, 1000), (900, 1600), (1600, 1600), (1600, 700),
                             (1000, 1500), (1500, 1100)], 1):
-    img(f'{C}/gallery/sculpture/vessels/vessel-{n}.jpg', w, h, f'vessel {n}', (150, 120, 60 + n * 20))
-page(f'{C}/gallery/sculpture/stele/_index.md', '---\ntitle: Stele\nweight: 3\n---\n')
+    extra = f'sculpture: ["vessels"]\nsculpture_weight: {n}\n'
+    views = [('artwork.jpg', w, h, None)]
+    if n == 1:
+        views += [('detail_1.jpg', 1200, 1200, None), ('detail_2.jpg', 1200, 800, None)]
+        extra += 'views: stack\n'
+    piece(f'vessel-{n}', f'Vessel {n}', 20 + n, views, extra)
 for n in range(1, 4):
-    page(f'{C}/gallery/sculpture/stele/stele-{n}/index.md', f'---\ntitle: "Stele {n}"\nweight: {n}\n---\n')
-    img(f'{C}/gallery/sculpture/stele/stele-{n}/artwork.jpg', 900, 1800, f'stele {n}', (90, 90, 90 + n * 40))
+    extra = f'sculpture: ["stele"]\nsculpture_weight: {n}\n'
+    if n == 3:
+        extra = 'sculpture: ["stele"]\ncollage: ["night-garden"]\n'
+    piece(f'stele-{n}', f'Stele {n}', 30 + n, [('artwork.jpg', 900, 1800, None)], extra)
+
+# Collage: one series, sharing Stele 3 with Sculpture.
+page(f'{C}/collage/_index.md', '---\ntitle: Collage\nweight: 2\n---\n')
+page(f'{C}/collage/night-garden/_index.md', '---\ntitle: Night Garden\n---\n')
+for n in range(1, 3):
+    piece(f'garden-{n}', f'Garden {n}', 40 + n, [('artwork.jpg', 1400, 1100, None)],
+          'collage: ["night-garden"]\n')
+
+# A folder collection still works alongside the taxonomies.
+page(f'{C}/gallery/early-work/_index.md', '---\ntitle: Early work\nweight: 50\n---\n')
+for n in range(1, 3):
+    page(f'{C}/gallery/early-work/sketch-{n}/index.md', f'---\ntitle: "Sketch {n}"\nweight: {n}\n---\n')
+    img(f'{C}/gallery/early-work/sketch-{n}/artwork.jpg', 1200, 1500, f'sketch {n}', (170, 150, 110))
+
+# An album: photos with no pages of their own, only when asked for.
+page(f'{C}/gallery/studio-visit/index.md', '---\ntitle: Studio visit\nweight: 60\nalbum: true\ngrid: justified\n---\n')
+for n, (w, h) in enumerate([(1600, 1000), (1000, 1500), (1500, 1100)], 1):
+    img(f'{C}/gallery/studio-visit/visit-{n}.jpg', w, h, f'visit {n}', (120, 140, 160))
 
 # A private collection: built, but unlisted and marked noindex.
-page(f'{C}/gallery/studio/_index.md', '---\ntitle: Studio\nweight: 20\nprivate: true\n---\n')
+page(f'{C}/gallery/studio/_index.md', '---\ntitle: Studio\nweight: 70\nprivate: true\n---\n')
 page(f'{C}/gallery/studio/wip/index.md', '---\ntitle: Work in progress\nweight: 1\n---\n')
 img(f'{C}/gallery/studio/wip/artwork.jpg', 1200, 1200, 'wip', (200, 200, 120))
 
 page(f'{C}/about.md', '---\ntitle: About\n---\nInside Sculpture:\n\n'
-     '{{< collections path="sculpture" >}}\n\nSold pieces:\n\n{{< artworks status="sold" >}}\n')
+     '{{< collections taxonomy="sculpture" >}}\n\nSold pieces:\n\n{{< artworks status="sold" >}}\n\n'
+     'Boxes:\n\n{{< artworks collection="sculpture/boxes" >}}\n')
 print('example content written')

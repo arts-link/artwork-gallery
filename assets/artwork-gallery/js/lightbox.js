@@ -3,7 +3,7 @@
   var g = document.getElementById('gallery');
   if (!g) return;
   var links = [];
-  var box, img, cap, zoomButton, stage, at = 0, returnFocus = null, pageMain = g.closest('main');
+  var box, img, cap, viewList, zoomButton, stage, at = 0, returnFocus = null, pageMain = g.closest('main');
   var zoomed = false, panX = 0, panY = 0, dragging = false, didDrag = false;
   var dragStartX = 0, dragStartY = 0, dragPanX = 0, dragPanY = 0;
   var zoomScale = 2;
@@ -22,7 +22,7 @@
   function slug(i) { return links[i].getAttribute('data-slug'); }
   function path(i) {
     return hashMode ? galleryPath + '#' + encodeURIComponent(slug(i)) :
-                      galleryPath + encodeURIComponent(slug(i)) + '/';
+                      links[i].getAttribute('href');
   }
   function atGallery() {
     return location.pathname === galleryPath && (!hashMode || !location.hash);
@@ -77,8 +77,51 @@
     strong.textContent = t || a.getAttribute('data-alt') || 'Artwork';
     cap.appendChild(strong);
     if (m) cap.appendChild(document.createTextNode(m));
+    showViews(a);
     document.title = a.getAttribute('data-document-title') || document.title;
     if (updatePath) history.replaceState({ gallery: true }, '', path(at));
+  }
+  // Further photos of the current piece, as small buttons under the caption.
+  var views = [], viewAt = 0;
+  function showViews(a) {
+    try { views = JSON.parse(a.getAttribute('data-views') || '[]'); }
+    catch (_) { views = []; }
+    viewAt = 0;
+    viewList.textContent = '';
+    viewList.hidden = views.length < 2;
+    views.forEach(function (view, n) {
+      var item = document.createElement('li');
+      var button = document.createElement('button');
+      button.type = 'button';
+      button.setAttribute('aria-label', view.caption || ('View ' + (n + 1)));
+      if (!n) button.setAttribute('aria-current', 'true');
+      var thumb = document.createElement('img');
+      thumb.src = view.thumb;
+      thumb.alt = '';
+      button.appendChild(thumb);
+      button.onclick = function (ev) { ev.stopPropagation(); showView(n); };
+      item.appendChild(button);
+      viewList.appendChild(item);
+    });
+  }
+  function showView(n) {
+    if (views.length < 2) return;
+    viewAt = (n + views.length) % views.length;
+    var view = views[viewAt];
+    img.src = view.src;
+    img.alt = view.alt || '';
+    setZoom(false);
+    [].forEach.call(viewList.querySelectorAll('button'), function (button, k) {
+      if (k === viewAt) button.setAttribute('aria-current', 'true');
+      else button.removeAttribute('aria-current');
+    });
+    var note = cap.querySelector('.lightbox__view-caption');
+    if (!note) {
+      note = document.createElement('span');
+      note.className = 'lightbox__view-caption';
+      cap.appendChild(note);
+    }
+    note.textContent = view.caption || '';
   }
   function close(clearPath) {
     if (box) {
@@ -122,7 +165,8 @@
                     '<button class="lightbox__zoom" aria-label="Zoom image to 2 times" aria-pressed="false" title="Zoom image">' +
                     '<svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="m15 15 5 5"></path></svg></button>' +
                     '<div class="lightbox__stage"><img alt=""></div>' +
-                    '<p class="lightbox__cap" aria-live="polite" aria-atomic="true"></p>';
+                    '<p class="lightbox__cap" aria-live="polite" aria-atomic="true"></p>' +
+                    '<ul class="lightbox__views" aria-label="Views of this piece" hidden></ul>';
     if (pageMain) {
       pageMain.inert = true;
       pageMain.setAttribute('aria-hidden', 'true');
@@ -130,6 +174,7 @@
     document.body.appendChild(box);
     document.body.style.overflow = 'hidden';
     img = box.querySelector('img'); cap = box.querySelector('.lightbox__cap');
+    viewList = box.querySelector('.lightbox__views');
     stage = box.querySelector('.lightbox__stage');
     zoomButton = box.querySelector('.lightbox__zoom');
     box.querySelector('.lightbox__close').onclick = function () { close(true); };
@@ -202,6 +247,8 @@
     if (ev.key === 'Escape') close(true);
     else if (ev.key === 'ArrowLeft') show(at - 1, true);
     else if (ev.key === 'ArrowRight') show(at + 1, true);
+    else if (ev.key === 'ArrowDown') { ev.preventDefault(); showView(viewAt + 1); }
+    else if (ev.key === 'ArrowUp') { ev.preventDefault(); showView(viewAt - 1); }
     else if (ev.key.toLowerCase() === 'z') setZoom(!zoomed);
     else if (ev.key === 'Tab') {
       var controls = [].slice.call(box.querySelectorAll('button'));

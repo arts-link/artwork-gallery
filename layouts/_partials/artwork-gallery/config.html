@@ -2,6 +2,6 @@
 {{- $defaults := dict
   "section" "gallery" "batchSize" 24 "artform" "Artwork" "untitled" "Untitled"
   "thumbSize" 640 "largeSize" 1600 "thumbQuality" 82 "largeQuality" 85
-  "webpThumbQuality" 80 "webpLargeQuality" 82 "grid" "square"
+  "webpThumbQuality" 80 "webpLargeQuality" 82 "grid" "square" "views" "strip" "collectionTaxonomies" slice
 -}}
 {{- return merge $defaults (site.Params.artworkGallery | default dict) -}}

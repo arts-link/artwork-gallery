@@ -1,12 +1,9 @@
 {{- /* One image in an album: its caption and derivatives.
        Context: dict "page" <album> "image" <resource> "index" <int>.
-       The caption is the resource title from front matter `resources`, else
-       the photo's EXIF ImageDescription, else nothing. */ -}}
+       The caption follows artwork-gallery/caption.html. */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $img := .image -}}
-{{- $title := "" -}}
-{{- with $img.Exif -}}{{- with .Tags.ImageDescription -}}{{- $title = strings.TrimSpace (string .) -}}{{- end -}}{{- end -}}
-{{- if ne $img.Title $img.Name -}}{{- $title = $img.Title -}}{{- end -}}
+{{- $title := partial "artwork-gallery/caption.html" $img -}}
 {{- $artist := site.Params.artist | default site.Title -}}
 {{- $alt := $img.Params.alt | default $title | default (printf "%s — %s by %s" .page.Title (lower $cfg.artform) $artist) -}}
 {{- $justified := eq (.page.Params.grid | default $cfg.grid) "justified" -}}

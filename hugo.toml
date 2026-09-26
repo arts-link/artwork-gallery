@@ -1,14 +1,21 @@
-# Example site for the artwork-gallery component. From this folder:
-#   hugo server --themesDir ../..
-baseURL = "https://example.org/"
-title = "Example artist"
-theme = ["artwork-gallery"]
-disableKinds = ["taxonomy", "term", "rss"]
-
-[params]
-  artist = "Example Artist"
-
+# Defaults for the artwork-gallery component. Sites override any of these
+# under [params.artworkGallery] in their own configuration.
 [params.artworkGallery]
-  section = "gallery"
+  section = "gallery"        # section holding the gallery; "" makes the home page the root
+  batchSize = 24             # tiles in the HTML; the rest load while scrolling
   artform = "Artwork"
-  batchSize = 2
+  untitled = "Untitled"
+  grid = "square"            # or "justified": rows that keep each image's shape
+  views = "strip"            # extra photos of a piece: "strip" of thumbnails or "stack" full size
+  collectionTaxonomies = []  # taxonomies whose terms are collections, e.g. ["collage", "sculpture"]
+  thumbSize = 640
+  largeSize = 1600
+  thumbQuality = 82
+  largeQuality = 85
+  webpThumbQuality = 80
+  webpLargeQuality = 82
+
+[module]
+  [module.hugoVersion]
+    extended = true
+    min = "0.146.0"

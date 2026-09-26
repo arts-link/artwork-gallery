@@ -1,6 +1,7 @@
 {{- /* Embed a selection of artworks on any page.
          {{< artworks >}}                        every artwork in the gallery
-         {{< artworks collection="sculpture" >}} one collection (path below the gallery)
+         {{< artworks collection="early-work" >}} one folder collection (path below the gallery)
+         {{< artworks collection="sculpture/boxes" >}} one series of a collection taxonomy
          {{< artworks limit="6" >}}              the first six in gallery order
          {{< artworks status="sold" >}}          only pieces with that status
          {{< artworks year="2018" limit="4" >}}
@@ -8,7 +9,7 @@
 {{- $pages := partialCached "artwork-gallery/all-artworks.html" .Page -}}
 {{- with .Get "collection" -}}
   {{- $root := partialCached "artwork-gallery/root.html" $.Page -}}
-  {{- $collection := site.GetPage (path.Join $root.Path .) -}}
+  {{- $collection := site.GetPage (path.Join $root.Path .) | default (site.GetPage (printf "/%s" .)) -}}
   {{- if not $collection -}}{{- errorf "artworks shortcode in %s: no collection %q" $.Page.File.Path . -}}{{- end -}}
   {{- $pages = partialCached "artwork-gallery/artworks.html" $collection $collection.RelPermalink -}}
 {{- end -}}

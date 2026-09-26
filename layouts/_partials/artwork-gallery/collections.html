@@ -1,4 +1,6 @@
-{{- /* Every public collection below the gallery root, depth first. */ -}}
+{{- /* Every public collection: sections below the gallery root (depth first),
+       then each collection taxonomy and its terms. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $found := slice -}}
 {{- $queue := slice (partialCached "artwork-gallery/root.html" .) -}}
 {{- range seq 12 -}}
@@ -12,5 +14,13 @@
     {{- end -}}
   {{- end -}}
   {{- $queue = $next -}}
+{{- end -}}
+{{- range $cfg.collectionTaxonomies -}}
+  {{- with site.GetPage (printf "/%s" .) -}}
+    {{- $found = $found | append . -}}
+    {{- range .Pages.ByWeight -}}
+      {{- if not .Params.private -}}{{- $found = $found | append . -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
 {{- end -}}
 {{- return $found -}}
