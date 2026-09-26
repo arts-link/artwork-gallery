@@ -1,10 +1,17 @@
 {{- /* Embed a selection of artworks on any page.
-         {{< artworks >}}                     every artwork
-         {{< artworks limit="6" >}}           the first six in gallery order
-         {{< artworks status="sold" >}}       only pieces with that status
+         {{< artworks >}}                        every artwork in the gallery
+         {{< artworks collection="sculpture" >}} one collection (path below the gallery)
+         {{< artworks limit="6" >}}              the first six in gallery order
+         {{< artworks status="sold" >}}          only pieces with that status
          {{< artworks year="2018" limit="4" >}}
        Each tile links to the artwork's own page. */ -}}
-{{- $pages := partialCached "artwork-gallery/artworks.html" .Page -}}
+{{- $pages := partialCached "artwork-gallery/all-artworks.html" .Page -}}
+{{- with .Get "collection" -}}
+  {{- $root := partialCached "artwork-gallery/root.html" $.Page -}}
+  {{- $collection := site.GetPage (path.Join $root.Path .) -}}
+  {{- if not $collection -}}{{- errorf "artworks shortcode in %s: no collection %q" $.Page.File.Path . -}}{{- end -}}
+  {{- $pages = partialCached "artwork-gallery/artworks.html" $collection $collection.RelPermalink -}}
+{{- end -}}
 {{- with .Get "status" -}}{{- $pages = where $pages "Params.status" (lower .) -}}{{- end -}}
 {{- with .Get "year" -}}{{- $pages = where $pages "Params.year" (int .) -}}{{- end -}}
 {{- with .Get "limit" -}}{{- $pages = first (int .) $pages -}}{{- end -}}

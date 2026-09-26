@@ -1,0 +1,9 @@
+{{- /* Every public artwork page in the gallery, collection by collection. */ -}}
+{{- $all := slice -}}
+{{- $root := partialCached "artwork-gallery/root.html" . -}}
+{{- range slice $root | append (partialCached "artwork-gallery/collections.html" . ) -}}
+  {{- range partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
+    {{- $all = $all | append . -}}
+  {{- end -}}
+{{- end -}}
+{{- return $all -}}

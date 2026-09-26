@@ -1,0 +1,8 @@
+{{- /* The section that holds the whole gallery; `section = ""` makes the home
+       page the root, so top-level sections are collections. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $root := site.GetPage (printf "/%s" (strings.Trim $cfg.section "/")) -}}
+{{- if not $root -}}
+  {{- errorf "artwork-gallery: section %q not found" $cfg.section -}}
+{{- end -}}
+{{- return $root -}}

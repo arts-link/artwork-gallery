@@ -1,0 +1,19 @@
+{{- /* The tile grid for a collection's artworks or an album's photos.
+       Context: dict "page" <page> "records" <first records> "batches" <urls>
+                     "hash" <bool: photos have no pages; use #fragment URLs> */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $artist := site.Params.artist | default site.Title -}}
+{{- $page := .page -}}
+{{- $justified := eq ($page.Params.grid | default $cfg.grid) "justified" }}
+  <ul class="gallery{{ if $justified }} gallery--justified{{ end }}" id="gallery" data-gallery-path="{{ $page.RelPermalink }}"
+      data-gallery-title="{{ printf "%s | %s" ($page.Params.seoTitle | default $page.Title) $artist }}"
+      {{- if .hash }} data-url-mode="hash"{{ end }}
+      data-batches="{{ .batches | default slice | jsonify }}">
+{{- range $i, $r := .records }}
+{{ partial "artwork-gallery/tile.html" (dict "record" $r "eager" (eq $i 0)) }}
+{{- end }}
+  </ul>
+{{- if .batches }}
+  <div class="gallery__sentinel" id="gallery-sentinel" aria-hidden="true"></div>
+  <p class="visually-hidden" id="gallery-status" aria-live="polite"></p>
+{{- end }}

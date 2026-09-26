@@ -1,0 +1,24 @@
+{{- /* Cards for the collections and albums inside a collection.
+         {{< collections >}}                     the top level of the gallery
+         {{< collections path="sculpture" >}}    inside one collection
+         {{< collections featured="true" >}}     every page marked `featured: true` */ -}}
+{{- $root := partialCached "artwork-gallery/root.html" .Page -}}
+{{- $cards := slice -}}
+{{- if .Get "featured" -}}
+  {{- range partialCached "artwork-gallery/collections.html" .Page -}}
+    {{- if .Params.featured -}}{{- $cards = $cards | append . -}}{{- end -}}
+  {{- end -}}
+  {{- range $root.RegularPagesRecursive -}}
+    {{- if .Params.featured -}}{{- $cards = $cards | append . -}}{{- end -}}
+  {{- end -}}
+{{- else -}}
+  {{- $collection := $root -}}
+  {{- with .Get "path" -}}{{- $collection = site.GetPage (path.Join $root.Path .) -}}{{- end -}}
+  {{- if not $collection -}}{{- errorf "collections shortcode in %s: no collection %q" .Page.File.Path (.Get "path") -}}{{- end -}}
+  {{- $cards = partialCached "artwork-gallery/children.html" $collection $collection.RelPermalink -}}
+{{- end -}}
+<ul class="ag-cards">
+{{- range $cards }}
+{{ partial "artwork-gallery/card.html" . }}
+{{- end }}
+</ul>

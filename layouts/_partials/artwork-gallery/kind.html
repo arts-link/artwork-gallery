@@ -1,0 +1,13 @@
+{{- /* What a page in the gallery is:
+         collection  a folder with _index.md; lists what is inside it
+         album       a page showing several images (or `album: true`)
+         artwork     a page for one piece */ -}}
+{{- $kind := "artwork" -}}
+{{- if or .IsSection .IsHome -}}
+  {{- $kind = "collection" -}}
+{{- else if isset .Params "album" -}}
+  {{- $kind = cond .Params.album "album" "artwork" -}}
+{{- else if gt (len (partial "artwork-gallery/images.html" .)) 1 -}}
+  {{- $kind = "album" -}}
+{{- end -}}
+{{- return $kind -}}

@@ -1,0 +1,34 @@
+{{- /* One image in an album: its caption and derivatives.
+       Context: dict "page" <album> "image" <resource> "index" <int>.
+       The caption is the resource title from front matter `resources`, else
+       the photo's EXIF ImageDescription, else nothing. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $img := .image -}}
+{{- $title := "" -}}
+{{- with $img.Exif -}}{{- with .Tags.ImageDescription -}}{{- $title = strings.TrimSpace (string .) -}}{{- end -}}{{- end -}}
+{{- if ne $img.Title $img.Name -}}{{- $title = $img.Title -}}{{- end -}}
+{{- $artist := site.Params.artist | default site.Title -}}
+{{- $alt := $img.Params.alt | default $title | default (printf "%s — %s by %s" .page.Title (lower $cfg.artform) $artist) -}}
+{{- $justified := eq (.page.Params.grid | default $cfg.grid) "justified" -}}
+{{- $thumbSpec := cond $justified (printf "fit %dx%d" (div (mul $cfg.thumbSize 3) 2) (div (mul $cfg.thumbSize 3) 2)) (printf "fill %dx%d Center" $cfg.thumbSize $cfg.thumbSize) -}}
+{{- $largeSpec := printf "fit %dx%d" $cfg.largeSize $cfg.largeSize -}}
+{{- $thumb := $img.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $thumbSpec $cfg.thumbQuality)) -}}
+{{- $thumbWebp := $img.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $thumbSpec $cfg.webpThumbQuality)) -}}
+{{- $large := $img.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $largeSpec $cfg.largeQuality)) -}}
+{{- $largeWebp := $img.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality)) -}}
+{{- $slug := path.BaseName $img.Name | urlize -}}
+{{- return dict
+  "i" .index
+  "slug" $slug
+  "href" $large.RelPermalink
+  "image" $largeWebp.RelPermalink
+  "title" $title
+  "meta" ($img.Params.status | default "")
+  "alt" $alt
+  "documentTitle" (printf "%s | %s" ($title | default .page.Title) $artist)
+  "thumbWebp" $thumbWebp.RelPermalink
+  "thumb" $thumb.RelPermalink
+  "w" $thumb.Width
+  "h" $thumb.Height
+  "large" $large
+-}}

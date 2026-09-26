@@ -1,0 +1,16 @@
+{{- /* Every public collection below the gallery root, depth first. */ -}}
+{{- $found := slice -}}
+{{- $queue := slice (partialCached "artwork-gallery/root.html" .) -}}
+{{- range seq 12 -}}
+  {{- $next := slice -}}
+  {{- range $queue -}}
+    {{- range where .Sections.ByWeight "Type" "artworks" -}}
+      {{- if not .Params.private -}}
+        {{- $found = $found | append . -}}
+        {{- $next = $next | append . -}}
+      {{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $queue = $next -}}
+{{- end -}}
+{{- return $found -}}

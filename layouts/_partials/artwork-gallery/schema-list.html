@@ -1,12 +1,16 @@
-{{- /* ItemList of every artwork, for the gallery section page. */ -}}
+{{- /* ItemList for a collection page: its artworks, then its sub-collections
+       and albums. */ -}}
 {{- $items := slice -}}
-{{- range $i, $p := partialCached "artwork-gallery/artworks.html" . -}}
-  {{- $items = $items | append (dict "@type" "ListItem" "position" (add $i 1) "item" (partial "artwork-gallery/schema-artwork.html" $p)) -}}
+{{- range partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
+  {{- $items = $items | append (dict "@type" "ListItem" "position" (add (len $items) 1) "item" (partial "artwork-gallery/schema-artwork.html" .)) -}}
+{{- end -}}
+{{- range partialCached "artwork-gallery/children.html" . .RelPermalink -}}
+  {{- $items = $items | append (dict "@type" "ListItem" "position" (add (len $items) 1) "name" .Title "url" .Permalink) -}}
 {{- end -}}
 {{- return dict
   "@type" "ItemList"
   "@id" (printf "%s#artworks" .Permalink)
-  "name" (printf "Artwork by %s" (site.Params.artist | default site.Title))
+  "name" (cond (eq . (partialCached "artwork-gallery/root.html" .)) (printf "Artwork by %s" (site.Params.artist | default site.Title)) (printf "%s by %s" .Title (site.Params.artist | default site.Title)))
   "numberOfItems" (len $items)
   "itemListElement" $items
 -}}

@@ -1,6 +1,6 @@
 {{- /* One gallery tile. Context: dict "record" <record> "eager" <bool>. */ -}}
 {{- $r := .record -}}
-    <li class="tile" id="{{ $r.slug }}">
+    <li class="tile" id="{{ $r.slug }}"{{ with $r.w }} style="--ar: {{ div (float .) $r.h | lang.FormatNumber 4 }}"{{ end }}>
       <a href="{{ $r.href }}" data-i="{{ $r.i }}" data-slug="{{ $r.slug }}"
          data-image="{{ $r.image }}"
          data-title="{{ $r.title }}" data-meta="{{ $r.meta }}"
@@ -9,7 +9,7 @@
         <picture>
           <source srcset="{{ $r.thumbWebp }}" type="image/webp">
           <img src="{{ $r.thumb }}" alt="{{ $r.alt }}"
-               width="640" height="640" {{ if .eager }}loading="eager" fetchpriority="high"{{ else }}loading="lazy"{{ end }}>
+               width="{{ $r.w | default 640 }}" height="{{ $r.h | default 640 }}" {{ if .eager }}loading="eager" fetchpriority="high"{{ else }}loading="lazy"{{ end }}>
         </picture>
         {{- if or $r.title $r.meta }}
         <span class="tile__caption">

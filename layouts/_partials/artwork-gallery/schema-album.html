@@ -1,0 +1,18 @@
+{{- /* ImageGallery body for an album: one ImageObject per photo. */ -}}
+{{- $artistID := printf "%s#artist" site.Home.Permalink -}}
+{{- $photos := slice -}}
+{{- range $i, $img := partial "artwork-gallery/images.html" . -}}
+  {{- $p := partial "artwork-gallery/photo.html" (dict "page" $ "image" $img "index" $i) -}}
+  {{- $object := dict "@type" "ImageObject" "contentUrl" $p.large.Permalink
+      "url" (printf "%s#%s" $.Permalink $p.slug) "creator" (dict "@id" $artistID)
+      "creditText" (site.Params.artist | default site.Title) -}}
+  {{- with $p.title -}}{{- $object = merge $object (dict "name" . "caption" .) -}}{{- end -}}
+  {{- $photos = $photos | append (dict "@type" "ListItem" "position" (add $i 1) "item" $object) -}}
+{{- end -}}
+{{- return dict
+  "@type" "ItemList"
+  "@id" (printf "%s#photos" .Permalink)
+  "name" .Title
+  "numberOfItems" (len $photos)
+  "itemListElement" $photos
+-}}

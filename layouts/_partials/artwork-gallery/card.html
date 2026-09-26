@@ -1,0 +1,19 @@
+{{- /* A card for a collection or album: cover image, title and a count. */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $cover := partialCached "artwork-gallery/cover.html" . .RelPermalink -}}
+{{- $count := partialCached "artwork-gallery/count.html" . .RelPermalink -}}
+    <li class="ag-card">
+      <a href="{{ .RelPermalink }}">
+{{- with $cover }}
+{{- $spec := printf "fill %dx%d Center" $cfg.thumbSize $cfg.thumbSize }}
+{{- $jpg := .Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $spec $cfg.thumbQuality)) }}
+{{- $webp := .Filter images.AutoOrient (images.Process (printf "%s q%d webp" $spec $cfg.webpThumbQuality)) }}
+        <picture>
+          <source srcset="{{ $webp.RelPermalink }}" type="image/webp">
+          <img src="{{ $jpg.RelPermalink }}" alt="" width="{{ $jpg.Width }}" height="{{ $jpg.Height }}" loading="lazy">
+        </picture>
+{{- end }}
+        <span class="ag-card__title">{{ .LinkTitle }}</span>
+        <span class="ag-card__count">{{ $count.label }}</span>
+      </a>
+    </li>

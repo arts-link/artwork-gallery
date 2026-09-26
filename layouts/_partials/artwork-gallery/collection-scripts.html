@@ -1,0 +1,5 @@
+{{- /* Scripts for a collection page; goes in the "scripts" block. */ -}}
+{{- if (partialCached "artwork-gallery/batches.html" . .RelPermalink).count }}
+<script src="{{ (partial "artwork-gallery/script.html" "gallery-progressive").RelPermalink }}" defer></script>
+<script src="{{ (partial "artwork-gallery/script.html" "lightbox").RelPermalink }}" defer></script>
+{{- end }}

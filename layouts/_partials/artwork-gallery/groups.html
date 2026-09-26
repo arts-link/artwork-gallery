@@ -1,0 +1,13 @@
+{{- /* Every public collection and album below the gallery root, for sitemaps
+       and indexes. */ -}}
+{{- $groups := slice -}}
+{{- $root := partialCached "artwork-gallery/root.html" . -}}
+{{- range slice $root | append (partialCached "artwork-gallery/collections.html" .) -}}
+  {{- if ne . $root -}}{{- $groups = $groups | append . -}}{{- end -}}
+  {{- range where .RegularPages.ByWeight "Type" "artworks" -}}
+    {{- if and (not .Params.private) (eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "album") -}}
+      {{- $groups = $groups | append . -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- return $groups -}}

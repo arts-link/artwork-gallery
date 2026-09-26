@@ -1,0 +1,31 @@
+{{- /* A collection's body: its sub-collections and albums as cards, then its
+       artworks as a grid. The first batch of artworks is plain HTML; the rest
+       arrives as visitors scroll. Every tile is a real link to its artwork
+       page, so the grid works without JavaScript. Section pages use it; a
+       home template can call it when the home page is the gallery root. */ -}}
+{{- $cards := partialCached "artwork-gallery/children.html" . .RelPermalink -}}
+{{- $batches := partialCached "artwork-gallery/batches.html" . .RelPermalink }}
+{{- with .Content }}
+  <div class="ag-intro">{{ . }}</div>
+{{- end }}
+{{- with $cards }}
+  <ul class="ag-cards">
+{{- range . }}
+{{ partial "artwork-gallery/card.html" . }}
+{{- end }}
+  </ul>
+{{- end }}
+{{- if $batches.count }}
+{{ partial "artwork-gallery/grid.html" (dict "page" . "records" $batches.first "batches" $batches.urls) }}
+  <noscript>
+    <section class="gallery__fallback" aria-labelledby="gallery-fallback-title">
+      <h2 id="gallery-fallback-title">All artwork</h2>
+      <ol>
+{{- range partialCached "artwork-gallery/artworks.html" . .RelPermalink }}
+{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink }}
+        <li><a href="{{ .RelPermalink }}">{{ $info.title | default $info.alt }}</a></li>
+{{- end }}
+      </ol>
+    </section>
+  </noscript>
+{{- end }}

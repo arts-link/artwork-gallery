@@ -1,0 +1,16 @@
+{{- /* The image that represents a page on cards and sharing previews:
+       a resource marked `cover: true`, else `featured_image`, else a file with
+       "feature" in its name, else its first image. A collection with no images
+       of its own borrows the cover of its first card or artwork. */ -}}
+{{- $cover := false -}}
+{{- $all := .Resources.ByType "image" -}}
+{{- with where $all "Params.cover" true -}}{{- $cover = index . 0 -}}{{- end -}}
+{{- if not $cover -}}{{- with .Params.featured_image -}}{{- $cover = $all.GetMatch . -}}{{- end -}}{{- end -}}
+{{- if not $cover -}}{{- $cover = $all.GetMatch "*feature*" -}}{{- end -}}
+{{- if not $cover -}}{{- with partial "artwork-gallery/images.html" . -}}{{- $cover = index . 0 -}}{{- end -}}{{- end -}}
+{{- if and (not $cover) .IsSection -}}
+  {{- $first := partialCached "artwork-gallery/artworks.html" . .RelPermalink -}}
+  {{- $first = (partialCached "artwork-gallery/children.html" . .RelPermalink) | append $first -}}
+  {{- with $first -}}{{- $cover = partialCached "artwork-gallery/cover.html" (index . 0) (index . 0).RelPermalink -}}{{- end -}}
+{{- end -}}
+{{- return $cover -}}

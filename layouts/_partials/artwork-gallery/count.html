@@ -1,0 +1,26 @@
+{{- /* How many works a page holds, recursively, with a readable label such as
+       "2 collections · 3 albums · 41 works". */ -}}
+{{- $works := 0 -}}
+{{- $collections := 0 -}}
+{{- $albums := 0 -}}
+{{- $kind := partialCached "artwork-gallery/kind.html" . .RelPermalink -}}
+{{- if eq $kind "album" -}}
+  {{- $works = len (partial "artwork-gallery/images.html" .) -}}
+{{- else if eq $kind "artwork" -}}
+  {{- $works = 1 -}}
+{{- else -}}
+  {{- $works = len (partialCached "artwork-gallery/artworks.html" . .RelPermalink) -}}
+  {{- range partialCached "artwork-gallery/children.html" . .RelPermalink -}}
+    {{- if eq (partialCached "artwork-gallery/kind.html" . .RelPermalink) "album" -}}
+      {{- $albums = add $albums 1 -}}
+    {{- else -}}
+      {{- $collections = add $collections 1 -}}
+    {{- end -}}
+    {{- $works = add $works (partialCached "artwork-gallery/count.html" . .RelPermalink).works -}}
+  {{- end -}}
+{{- end -}}
+{{- $parts := slice -}}
+{{- if $collections -}}{{- $parts = $parts | append (cond (eq $collections 1) "1 collection" (printf "%d collections" $collections)) -}}{{- end -}}
+{{- if $albums -}}{{- $parts = $parts | append (cond (eq $albums 1) "1 album" (printf "%d albums" $albums)) -}}{{- end -}}
+{{- $parts = $parts | append (cond (eq $works 1) "1 work" (printf "%d works" $works)) -}}
+{{- return dict "works" $works "collections" $collections "albums" $albums "label" (delimit $parts " · ") -}}

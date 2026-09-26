@@ -22,8 +22,9 @@
     var image = document.createElement('img');
     image.src = record.thumb;
     image.alt = text(record.alt);
-    image.width = 640;
-    image.height = 640;
+    image.width = record.w || 640;
+    image.height = record.h || 640;
+    if (record.w) item.style.setProperty('--ar', (record.w / record.h).toFixed(4));
     image.loading = 'lazy';
     picture.appendChild(source);
     picture.appendChild(image);

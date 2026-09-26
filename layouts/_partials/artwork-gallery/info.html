@@ -11,37 +11,34 @@
        page has a unique browser and search title. */ -}}
 {{- $counts := partialCached "artwork-gallery/title-counts.html" . -}}
 {{- $repeated := or (not $title) (gt (index $counts (lower $title)) 1) -}}
-{{- $seoTitle := cond $repeated (printf "%s — Work %d" $displayTitle .Weight) $title -}}
-{{- $seoName := cond $repeated (printf "%s, gallery work %d" $displayTitle .Weight) $title -}}
+{{- $number := string .Weight -}}
+{{- if not .Weight -}}{{- $number = .Date.Format "2006-01-02" -}}{{- end -}}
+{{- $seoTitle := cond $repeated (printf "%s — Work %s" $displayTitle $number) $title -}}
+{{- $seoName := cond $repeated (printf "%s, gallery work %s" $displayTitle $number) $title -}}
 {{- $description := printf "%s by %s." $seoName $artist -}}
 {{- with $status -}}{{- $description = printf "%s %s." $description . -}}{{- end -}}
 
 {{- /* The artwork image: front matter `image`, else artwork.*, else the first
        image in the bundle that is not the sharing card. */ -}}
-{{- $src := "" -}}
+{{- $src := false -}}
 {{- with .Params.image -}}{{- $src = $.Resources.Get . -}}{{- end -}}
 {{- if not $src -}}{{- $src = .Resources.GetMatch "artwork.*" -}}{{- end -}}
-{{- if not $src -}}
-  {{- range .Resources.ByType "image" -}}
-    {{- if and (not $src) (not (hasPrefix .Name "social")) -}}{{- $src = . -}}{{- end -}}
-  {{- end -}}
-{{- end -}}
+{{- if not $src -}}{{- with partial "artwork-gallery/images.html" . -}}{{- $src = index . 0 -}}{{- end -}}{{- end -}}
 {{- if not $src -}}
   {{- errorf "artwork-gallery: %s has no artwork image in its folder" .File.Path -}}
 {{- end -}}
-
-{{- $thumbSpec := printf "%dx%d Center" $cfg.thumbSize $cfg.thumbSize -}}
-{{- $largeSpec := printf "%dx%d" $cfg.largeSize $cfg.largeSize -}}
-{{- $thumb := $src.Fill (printf "%s q%d jpg" $thumbSpec $cfg.thumbQuality) -}}
-{{- $thumbWebp := $src.Fill (printf "%s q%d webp" $thumbSpec $cfg.webpThumbQuality) -}}
-{{- $large := $src.Fit (printf "%s q%d jpg" $largeSpec $cfg.largeQuality) -}}
-{{- $largeWebp := $src.Fit (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality) -}}
+{{- $thumbSpec := printf "fill %dx%d Center" $cfg.thumbSize $cfg.thumbSize -}}
+{{- $largeSpec := printf "fit %dx%d" $cfg.largeSize $cfg.largeSize -}}
+{{- $thumb := $src.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $thumbSpec $cfg.thumbQuality)) -}}
+{{- $thumbWebp := $src.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $thumbSpec $cfg.webpThumbQuality)) -}}
+{{- $large := $src.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $largeSpec $cfg.largeQuality)) -}}
+{{- $largeWebp := $src.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality)) -}}
 
 {{- /* Sharing card: social.* when the folder has one, otherwise the artwork
        uncropped on a 1200 x 630 field of its own dominant colour. */ -}}
 {{- $social := .Resources.GetMatch "social.*" -}}
 {{- if not $social -}}
-  {{- $fit := $src.Fit "1120x560 q85 jpg" -}}
+  {{- $fit := $src.Filter images.AutoOrient (images.Process "fit 1120x560 q85 jpg") -}}
   {{- $colour := index $src.Colors 0 | default "#ffffff" -}}
   {{- $left := div (sub 1200 $fit.Width) 2 -}}
   {{- $top := div (sub 630 $fit.Height) 2 -}}
@@ -62,6 +59,7 @@
   "thumb" $thumb
   "thumbWebp" $thumbWebp
   "large" $large
+  "source" $src
   "largeWebp" $largeWebp
   "social" $social
 -}}

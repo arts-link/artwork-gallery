@@ -10,6 +10,8 @@
   var lastInputWasKeyboard = false;
   var galleryPath = g.getAttribute('data-gallery-path') || '/gallery/';
   var galleryTitle = g.getAttribute('data-gallery-title') || document.title;
+  // Album photos have no pages of their own, so they are addressed as #photo.
+  var hashMode = g.getAttribute('data-url-mode') === 'hash';
 
   function refreshLinks() {
     links = [].slice.call(g.querySelectorAll('a[data-i]'));
@@ -18,7 +20,13 @@
   g.addEventListener('gallery:items-appended', refreshLinks);
 
   function slug(i) { return links[i].getAttribute('data-slug'); }
-  function path(i) { return galleryPath + encodeURIComponent(slug(i)) + '/'; }
+  function path(i) {
+    return hashMode ? galleryPath + '#' + encodeURIComponent(slug(i)) :
+                      galleryPath + encodeURIComponent(slug(i)) + '/';
+  }
+  function atGallery() {
+    return location.pathname === galleryPath && (!hashMode || !location.hash);
+  }
 
   function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
 
@@ -84,10 +92,10 @@
       g.hidden = false;
       g.removeAttribute('data-reveal-on-close');
     }
-    if (clearPath && location.pathname !== galleryPath) {
+    if (clearPath && !atGallery()) {
       history.replaceState(null, '', galleryPath + location.search);
     }
-    if (location.pathname === galleryPath) document.title = galleryTitle;
+    if (atGallery()) document.title = galleryTitle;
     var focusTarget = returnFocus && returnFocus !== document.body &&
                       document.contains(returnFocus) ? returnFocus : links[at];
     if (focusTarget) {
@@ -164,6 +172,12 @@
     box.querySelector('.lightbox__close').focus();
   }
   function indexFromPath() {
+    if (hashMode) {
+      var wanted = decodeURIComponent(location.hash.slice(1));
+      return wanted ? links.findIndex(function (a) {
+        return a.getAttribute('data-slug') === wanted;
+      }) : -1;
+    }
     var current = location.pathname.replace(/\/*$/, '/');
     return links.findIndex(function (a) { return a.getAttribute('href') === current; });
   }
@@ -203,5 +217,6 @@
     lastInputWasKeyboard = false;
   }, true);
   addEventListener('popstate', syncFromPath);
+  if (hashMode) addEventListener('hashchange', syncFromPath);
   syncFromPath();
 })();
