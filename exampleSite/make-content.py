@@ -89,7 +89,6 @@ for n, (w, h) in enumerate([(1600, 1000), (900, 1600), (1600, 1600), (1600, 700)
     views = [('artwork.jpg', w, h, None)]
     if n == 1:
         views += [('detail_1.jpg', 1200, 1200, None), ('detail_2.jpg', 1200, 800, None)]
-        extra += 'views: stack\n'
     piece(f'vessel-{n}', f'Vessel {n}', 20 + n, views, extra)
 for n in range(1, 4):
     extra = f'sculpture: ["stele"]\nsculpture_weight: {n}\n'

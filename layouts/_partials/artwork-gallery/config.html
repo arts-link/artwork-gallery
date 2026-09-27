@@ -1,7 +1,7 @@
 {{- /* Component settings, with the defaults from the component's hugo.toml. */ -}}
 {{- $defaults := dict
   "section" "gallery" "batchSize" 24 "artform" "Artwork" "untitled" "Untitled"
-  "grid" "square" "views" "strip" "collectionTaxonomies" slice
+  "grid" "square" "collectionTaxonomies" slice
   "thumbWidths" (slice 320 640) "largeWidths" (slice 800 1200 1600 2400)
 -}}
 {{- return merge $defaults (site.Params.artworkGallery | default dict) -}}

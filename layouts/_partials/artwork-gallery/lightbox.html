@@ -1,0 +1,44 @@
+{{- /* One piece in the lightbox. The piece page renders it as a whole page;
+       on a grid, gallery.js fetches that page and shows this element in an
+       overlay, so both use the same markup. Close, previous and next are
+       real links for the piece's home collection; gallery.js follows the
+       collection the visitor came from instead. */ -}}
+{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
+{{- $contexts := partialCached "artwork-gallery/contexts.html" . .RelPermalink -}}
+{{- $root := partialCached "artwork-gallery/root.html" . -}}
+{{- $home := $contexts.home -}}
+{{- $here := dict -}}
+{{- range $contexts.list -}}{{- if eq .page $home -}}{{- $here = . -}}{{- end -}}{{- end -}}
+{{- $label := cond (eq $home $root) "all work" $home.LinkTitle }}
+<div class="lightbox" data-piece="{{ .RelPermalink }}">
+  <a class="lightbox__close" data-nav="up" href="{{ $home.RelPermalink }}" aria-label="Close: back to {{ $label }}">&times;</a>
+  {{ with $here.prev }}<a class="lightbox__prev" data-nav="prev" rel="prev" href="{{ .RelPermalink }}" aria-label="Previous">&lsaquo;</a>{{ else }}<a class="lightbox__prev" data-nav="prev" aria-label="Previous" hidden>&lsaquo;</a>{{ end }}
+  {{ with $here.next }}<a class="lightbox__next" data-nav="next" rel="next" href="{{ .RelPermalink }}" aria-label="Next">&rsaquo;</a>{{ else }}<a class="lightbox__next" data-nav="next" aria-label="Next" hidden>&rsaquo;</a>{{ end }}
+  <button class="lightbox__zoom" type="button" aria-label="Enlarge image" data-zoom="{{ $info.largeSet.largest.RelPermalink }}" hidden><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="m15 15 5 5"></path></svg></button>
+  <div class="lightbox__stage">
+    {{ partial "artwork-gallery/picture.html" (dict "set" $info.largeSet "sizes" "(max-width: 1440px) 100vw, 1400px" "alt" $info.alt "class" "lightbox__image" "priority" true) }}
+  </div>
+  <div class="lightbox__cap">
+    <h1 class="lightbox__title">{{ $info.displayTitle }}</h1>
+    {{- with $info.status }}
+    <p class="lightbox__meta">{{ . }}</p>
+    {{- end }}
+    <p class="lightbox__view-caption" aria-live="polite"></p>
+  </div>
+{{- with $info.views }}
+{{- $all := slice (dict "largeSet" $info.largeSet "thumbSet" (partialCached "artwork-gallery/derivatives.html"
+      (dict "image" $info.source "widths" (slice 160 320) "square" true "fallback" 320) $.RelPermalink $info.source.Name "view") "alt" $info.alt "caption" "") | append . }}
+  <ul class="lightbox__views" aria-label="Views of this piece">
+{{- range $n, $v := $all }}
+    <li>
+      <a href="{{ $v.largeSet.jpg.RelPermalink }}" data-avif="{{ $v.largeSet.avif }}" data-webp="{{ $v.largeSet.webp }}"
+         data-w="{{ $v.largeSet.width }}" data-h="{{ $v.largeSet.height }}" data-alt="{{ $v.alt }}"
+         data-caption="{{ $v.caption }}" data-zoom="{{ $v.largeSet.largest.RelPermalink }}"{{ if eq $n 0 }} aria-current="true"{{ end }}>
+        {{ partial "artwork-gallery/picture.html" (dict "set" $v.thumbSet "sizes" "52px" "alt" (cond (eq $n 0) "Main view" ($v.caption | default (printf "View %d" (add $n 1))))) }}
+      </a>
+    </li>
+{{- end }}
+  </ul>
+{{- end }}
+</div>
+{{- /**/ -}}

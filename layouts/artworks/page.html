@@ -1,80 +1,27 @@
-{{- /* A piece's permanent page: the image is plain HTML, so it paints without
-       waiting for scripts. gallery.js adds view switching, zoom, keyboard and
-       swipe navigation, and follows the collection the visitor came from. */ -}}
-{{ define "main" }}
-{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
-{{- $info := partialCached "artwork-gallery/info.html" . .RelPermalink -}}
+{{- /* A piece's permanent page: the lightbox as a whole document, without the
+       site's banner, menu or footer. The image is plain HTML, so it paints
+       without waiting for scripts; gallery.js adds keyboard, swipe, views,
+       zoom and the collection the visitor came from. The <head> comes from
+       artwork-gallery/head.html, which sites override. */ -}}
 {{- $contexts := partialCached "artwork-gallery/contexts.html" . .RelPermalink -}}
-{{- $home := $contexts.home -}}
-{{- $here := dict -}}
-{{- range $contexts.list -}}{{- if eq .page $home -}}{{- $here = . -}}{{- end -}}{{- end -}}
-{{- $sizes := "(max-width: 940px) calc(100vw - 40px), 900px" }}
-  <article class="artwork">
-    <h1 class="page-title">{{ $info.displayTitle }}</h1>
-    <figure class="artwork__figure">
-      <button class="artwork__zoom" type="button" aria-label="Enlarge image" data-zoom="{{ $info.largeSet.largest.RelPermalink }}" hidden></button>
-      <div class="artwork__stage">
-        {{ partial "artwork-gallery/picture.html" (dict "set" $info.largeSet "sizes" $sizes "alt" $info.alt "class" "artwork__image" "priority" true) }}
-      </div>
-      <figcaption class="artwork__caption" aria-live="polite"></figcaption>
-    </figure>
-{{- with $info.views }}
-{{- $layout := $.Params.views | default $cfg.views }}
-{{- if eq $layout "stack" }}
-    <div class="artwork__views artwork__views--stack">
-{{- range . }}
-      <figure>
-        {{ partial "artwork-gallery/picture.html" (dict "set" .largeSet "sizes" $sizes "alt" .alt) }}
-        {{- with .caption }}<figcaption>{{ . }}</figcaption>{{ end }}
-      </figure>
-{{- end }}
-    </div>
-{{- else }}
-    <ul class="artwork__views" aria-label="Views of this piece">
-{{- $all := slice (dict "largeSet" $info.largeSet "thumbSet" (partialCached "artwork-gallery/derivatives.html"
-      (dict "image" $info.source "widths" (slice 160 320) "square" true "fallback" 320) $.RelPermalink $info.source.Name "view") "alt" $info.alt "caption" "") | append . }}
-{{- range $n, $v := $all }}
-      <li>
-        <a href="{{ $v.largeSet.jpg.RelPermalink }}" data-avif="{{ $v.largeSet.avif }}" data-webp="{{ $v.largeSet.webp }}"
-           data-w="{{ $v.largeSet.width }}" data-h="{{ $v.largeSet.height }}" data-alt="{{ $v.alt }}"
-           data-caption="{{ $v.caption }}" data-zoom="{{ $v.largeSet.largest.RelPermalink }}"{{ if eq $n 0 }} aria-current="true"{{ end }}>
-          {{ partial "artwork-gallery/picture.html" (dict "set" $v.thumbSet "sizes" "96px" "alt" (cond (eq $n 0) "Main view" ($v.caption | default (printf "View %d" (add $n 1))))) }}
-          {{- with $v.caption }}<span>{{ . }}</span>{{ end }}
-        </a>
-      </li>
-{{- end }}
-    </ul>
-{{- end }}
-{{- end }}
-{{- with $info.status }}
-    <p class="artwork__meta">{{ . }}</p>
-{{- end }}
-{{- with .Content }}
-    <div class="artwork__text">{{ . }}</div>
-{{- end }}
-{{- $series := slice }}
-{{- range $contexts.list }}{{ if ne .page (partialCached "artwork-gallery/root.html" $) }}{{ $series = $series | append . }}{{ end }}{{ end }}
-{{- with $series }}
-    <p class="artwork__series">In
-{{- range $n, $s := . }}{{ if $n }},{{ end }} <a href="{{ $s.path }}">{{ $s.title }}</a>{{ with $s.page.Parent }}{{ if ne .Kind "home" }} <span>({{ .LinkTitle }})</span>{{ end }}{{ end }}{{ end }}
-    </p>
-{{- end }}
-    <nav class="artwork__nav" aria-label="Artwork">
-      {{ with $here.prev }}<a rel="prev" data-nav="prev" href="{{ .RelPermalink }}">Previous</a>{{ else }}<a data-nav="prev" hidden>Previous</a>{{ end }}
-      <a data-nav="up" href="{{ $home.RelPermalink }}">{{ if eq $home (partialCached "artwork-gallery/root.html" .) }}All work{{ else }}{{ $home.LinkTitle }}{{ end }}</a>
-      {{ with $here.next }}<a rel="next" data-nav="next" href="{{ .RelPermalink }}">Next</a>{{ else }}<a data-nav="next" hidden>Next</a>{{ end }}
-    </nav>
-  </article>
+<!doctype html>
+<html lang="{{ site.Language.Lang | default "en" }}" class="ag-lightbox-page">
+<head>
+{{ partial "artwork-gallery/head.html" . }}
+</head>
+<body>
+<a class="ag-brand" href="{{ site.Home.RelPermalink }}">{{ site.Params.artist | default site.Title }}</a>
+<main>
+{{ partial "artwork-gallery/lightbox.html" . }}
+</main>
 {{- $map := dict }}
 {{- range $contexts.list }}
-{{- $label := cond (eq .page (partialCached "artwork-gallery/root.html" $)) "All work" .title }}
+{{- $label := cond (eq .page (partialCached "artwork-gallery/root.html" $)) "all work" .title }}
 {{- $prev := "" }}{{ with .prev }}{{ $prev = .RelPermalink }}{{ end }}
 {{- $next := "" }}{{ with .next }}{{ $next = .RelPermalink }}{{ end }}
 {{- $map = merge $map (dict .path (dict "label" $label "prev" $prev "next" $next)) }}
 {{- end }}
-  <script type="application/json" id="ag-context">{{ $map | jsonify | safeJS }}</script>
-{{ end }}
-
-{{ define "scripts" }}
+<script type="application/json" id="ag-context">{{ $map | jsonify | safeJS }}</script>
 {{ partial "artwork-gallery/scripts.html" . }}
-{{ end }}
+</body>
+</html>

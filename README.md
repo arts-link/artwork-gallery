@@ -2,7 +2,8 @@
 
 A Hugo theme component for artist portfolios. Every piece gets its own page
 with resized images and structured data; pieces are grouped into series by
-medium; grids load progressively and every tile opens the piece's own page.
+medium; grids load progressively and open each piece in a lightbox, and every
+piece also has its own lightbox page.
 
 It provides no page chrome. Stack it in front of the theme that does.
 
@@ -72,7 +73,6 @@ Front matter for a piece:
 | `year`   | Stored for filtering (`{{< artworks year="2018" >}}`); not displayed yet |
 | `alt`    | Main image description; defaults to the title |
 | `image`  | File name of the main image if it is not `artwork.*` |
-| `views`  | `strip` (default) or `stack`: how further photos are shown on the page |
 | `private` | `true` leaves the piece out of every listing and the sitemap and marks it `noindex`; its URL still works |
 | `<taxonomy>` | The series the piece belongs to, e.g. `sculpture: ["boxes"]` |
 | `<taxonomy>_weight` | Its place within that series, e.g. `sculpture_weight: 2` |
@@ -86,9 +86,9 @@ first photo by file name, so a folder of camera files such as `IMG_3220.JPG`,
 image.
 
 **Further views:** every other photo in the folder, in file-name order
-(`detail_01`, `detail_02`… keeps ten or more in order). They appear under the
-main image as a strip of thumbnails that swap into the main image (arrow up
-and down step through them), or full size with `views: stack`. A view's caption is, in order of preference, its `resources` title, the
+(`detail_01`, `detail_02`… keeps ten or more in order). They appear in the
+lightbox as thumbnails that swap into the main image (arrow up and down step
+through them). A view's caption is, in order of preference, its `resources` title, the
 photo's EXIF description, or its file name made readable (`detail_1` becomes
 "Detail 1"; camera names give none). `hidden: true` keeps a photo out:
 
@@ -151,20 +151,32 @@ changes.
 
 ## Browsing
 
-A tile is a plain link to the piece's page. On the way:
+**On a grid,** a tile opens the piece in a lightbox over the grid:
+- The address bar changes to the piece's own URL, and the page title follows.
+- Arrow keys (or a swipe) page through the grid's own order, loading more
+  tiles as needed. Up and down step through a piece's views, and the image or
+  the magnifier opens the largest version at full size.
+- Escape, the close button, the dark backdrop or the browser's Back button
+  return to the grid where you left it.
+- The overlay shows the lightbox from the piece's own page, fetched as the
+  pointer reaches a tile. The markup exists once, and nothing about the image
+  is duplicated in the grid.
 
-- The page is prerendered while the pointer rests on the tile (speculation
-  rules, Chromium), and the tile's image morphs into the piece's main image
-  (cross-document view transitions: Chromium and Safari 18.2+; others simply
-  load the page). Coming back morphs it into its tile again.
-- The main image is plain HTML with high fetch priority: nothing waits on a
-  script to show the work.
-- On the piece page, arrow left and right (or a swipe) go to the previous or
-  next piece in the collection it was opened from; arrow up and down step
-  through its views. Selecting the image opens the largest version at full
-  size, scrollable, in a dialog.
+**A piece's URL** (a shared link, a search result) is a lightbox page: the
+same full-screen view, without the site's banner, menu or footer, and complete
+in plain HTML, so the image shows without waiting for scripts.
+- Close goes to the piece's collection.
+- Previous and next are real links, prerendered on hover and crossfaded by
+  a view transition in browsers that support them.
+- Opened from a series, the page follows that series.
 
-All of it comes from one deferred script of about 3 KB (gzipped); without it
+The piece page is a standalone document, so it doesn't use the site's
+`baseof.html`. Its `<head>` comes from `artwork-gallery/head.html`: the
+default covers title, description, canonical, sharing tags, JSON-LD and the
+component stylesheet. Override it in the site to use the site's own head
+partials, fonts and CSS.
+
+Everything comes from one deferred script of about 5 KB (gzipped); without it
 every page and link still works.
 
 ## Images
@@ -204,7 +216,6 @@ folder between runs only process new or changed images.
   artform = "Embroidery"     # VisualArtwork artform, alt text, descriptions
   untitled = "Untitled embroidery"
   grid = "square"            # or "justified": rows that keep each image's shape
-  views = "strip"            # further photos of a piece: "strip" or "stack"
   collectionTaxonomies = []  # e.g. ["collage", "sculpture"]
   thumbWidths = [320, 640]   # grid tiles and cards
   largeWidths = [800, 1200, 1600, 2400]   # piece images
@@ -224,8 +235,12 @@ returns `pageType`, `title`, `description`, `image`, `imageAlt`, `mainEntity`,
 `breadcrumb` and (for pieces) `noindex`; elsewhere an empty map.
 
 `partial "artwork-gallery/assets.html" .` returns the stylesheet for the theme
-to link or concatenate. Colours and fonts are `--ag-*` custom properties;
-override them in the theme's CSS rather than the selectors.
+to link or concatenate. Colours and fonts are `--ag-*` custom properties
+(`--ag-lightbox-bg` and `--ag-lightbox-ink` for the lightbox); override them
+in the theme's CSS rather than the selectors.
+
+Piece pages don't use the theme's `baseof.html`; override
+`artwork-gallery/head.html` to give them the site's head (see Browsing).
 
 The component's `sitemap.xml` leaves out private pieces. A site with its own
 sitemap can use `artwork-gallery/all-artworks.html` (every public piece) and

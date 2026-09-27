@@ -1,4 +1,6 @@
-{{- /* The component's script, plus speculation rules that prerender pieces
-       and series on hover, so the next page is ready before the click. */ -}}
+{{- /* The component's script, plus speculation rules that prerender the
+       previous and next pieces and series cards, so real navigations are
+       ready before the click. Grid tiles open the overlay instead, which
+       fetches the piece page on hover itself. */ -}}
 <script src="{{ (partial "artwork-gallery/script.html" "gallery").RelPermalink }}" defer></script>
-<script type="speculationrules">{"prerender":[{"where":{"selector_matches":".tile a, .ag-card a, .artwork__nav a, .artwork__series a"},"eagerness":"moderate"}]}</script>
+<script type="speculationrules">{"prerender":[{"where":{"selector_matches":".lightbox__prev, .lightbox__next, .ag-card a"},"eagerness":"moderate"}]}</script>
