@@ -14,7 +14,7 @@
   <a class="lightbox__close" data-nav="up" href="{{ $home.RelPermalink }}" aria-label="Close: back to {{ $label }}">&times;</a>
   {{ with $here.prev }}<a class="lightbox__prev" data-nav="prev" rel="prev" href="{{ .RelPermalink }}" aria-label="Previous">&lsaquo;</a>{{ else }}<a class="lightbox__prev" data-nav="prev" aria-label="Previous" hidden>&lsaquo;</a>{{ end }}
   {{ with $here.next }}<a class="lightbox__next" data-nav="next" rel="next" href="{{ .RelPermalink }}" aria-label="Next">&rsaquo;</a>{{ else }}<a class="lightbox__next" data-nav="next" aria-label="Next" hidden>&rsaquo;</a>{{ end }}
-  <button class="lightbox__zoom" type="button" aria-label="Enlarge image" data-zoom="{{ $info.largeSet.largest.RelPermalink }}" hidden><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="m15 15 5 5"></path></svg></button>
+  <button class="lightbox__zoom" type="button" aria-label="Zoom image" aria-pressed="false" hidden><svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="5.5"></circle><path d="m15 15 5 5"></path></svg></button>
   <div class="lightbox__stage">
     {{ partial "artwork-gallery/picture.html" (dict "set" $info.largeSet "sizes" "(max-width: 1440px) 100vw, 1400px" "alt" $info.alt "class" "lightbox__image" "priority" true) }}
   </div>
@@ -33,7 +33,7 @@
     <li>
       <a href="{{ $v.largeSet.jpg.RelPermalink }}" data-avif="{{ $v.largeSet.avif }}" data-webp="{{ $v.largeSet.webp }}"
          data-w="{{ $v.largeSet.width }}" data-h="{{ $v.largeSet.height }}" data-alt="{{ $v.alt }}"
-         data-caption="{{ $v.caption }}" data-zoom="{{ $v.largeSet.largest.RelPermalink }}"{{ if eq $n 0 }} aria-current="true"{{ end }}>
+         data-caption="{{ $v.caption }}"{{ if eq $n 0 }} aria-current="true"{{ end }}>
         {{ partial "artwork-gallery/picture.html" (dict "set" $v.thumbSet "sizes" "52px" "alt" (cond (eq $n 0) "Main view" ($v.caption | default (printf "View %d" (add $n 1))))) }}
       </a>
     </li>

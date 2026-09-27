@@ -14,9 +14,10 @@ Nothing is tagged yet; the first release will be 0.1.0.
   piece's first series is its home collection for navigation and
   breadcrumbs.
 - Grids open pieces in a lightbox overlay (piece URL in the address bar,
-  keyboard and swipe paging in grid order, views, zoom, Back to close). Each
-  piece's own URL is the same lightbox as a standalone, chrome-free page that
-  follows the collection it was opened from.
+  keyboard and swipe paging in grid order, views, zoom in place with drag
+  to pan, Back to close). Each piece's own URL is the same lightbox as a
+  standalone, chrome-free page that follows the collection it was opened
+  from.
 - AVIF and WebP `srcset`s with a JPEG fallback for every image.
 - Progressive grid (content-addressed JSON batches), square or justified.
 - `private: true` pieces are unlisted, left out of the sitemap and noindex.

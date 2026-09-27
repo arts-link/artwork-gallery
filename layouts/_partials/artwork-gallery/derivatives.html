@@ -15,13 +15,11 @@
 {{- $spec := "resize %dx %s" -}}
 {{- if .square -}}{{- $spec = "fill %dx%[1]d Center %s" -}}{{- end -}}
 {{- $sets := dict -}}
-{{- $largest := false -}}
 {{- range $format := slice "avif" "webp" -}}
   {{- $candidates := slice -}}
   {{- range $widths -}}
     {{- $r := $img.Filter images.AutoOrient (images.Process (printf $spec . $format)) -}}
     {{- $candidates = $candidates | append (printf "%s %dw" $r.RelPermalink $r.Width) -}}
-    {{- if eq $format "webp" -}}{{- $largest = $r -}}{{- end -}}
   {{- end -}}
   {{- $sets = merge $sets (dict $format (delimit $candidates ", ")) -}}
 {{- end -}}
@@ -33,5 +31,4 @@
   "jpg" $jpg
   "width" $jpg.Width
   "height" $jpg.Height
-  "largest" $largest
 -}}

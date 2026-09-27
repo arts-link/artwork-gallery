@@ -154,8 +154,9 @@ changes.
 **On a grid,** a tile opens the piece in a lightbox over the grid:
 - The address bar changes to the piece's own URL, and the page title follows.
 - Arrow keys (or a swipe) page through the grid's own order, loading more
-  tiles as needed. Up and down step through a piece's views, and the image or
-  the magnifier opens the largest version at full size.
+  tiles as needed. Up and down step through a piece's views.
+- The image, the magnifier or `z` zooms it 2x in place, with the controls
+  still there; drag to pan, and Escape or another click resets it.
 - Escape, the close button, the dark backdrop or the browser's Back button
   return to the grid where you left it.
 - The overlay shows the lightbox from the piece's own page, fetched as the

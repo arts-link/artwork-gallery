@@ -19,38 +19,47 @@
     return /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName);
   }
 
-  // One zoom dialog per document: the largest version at full size, scrollable.
-  var zoomDialog;
-  function zoom(src, alt) {
-    if (!window.HTMLDialogElement) return;
-    if (!zoomDialog) {
-      zoomDialog = document.createElement('dialog');
-      zoomDialog.className = 'ag-zoom';
-      zoomDialog.innerHTML = '<img alt="">';
-      zoomDialog.addEventListener('click', function () { zoomDialog.close(); });
-      document.body.appendChild(zoomDialog);
-    }
-    var image = zoomDialog.querySelector('img');
-    image.src = src;
-    image.alt = alt || '';
-    zoomDialog.showModal();
-    image.decode().catch(function () {}).then(function () {
-      zoomDialog.scrollTop = (zoomDialog.scrollHeight - zoomDialog.clientHeight) / 2;
-      zoomDialog.scrollLeft = (zoomDialog.scrollWidth - zoomDialog.clientWidth) / 2;
-    });
-  }
-
-  // Wire one .lightbox element: views swap into the main image, the zoom
-  // button enlarges it, and a horizontal swipe calls onSwipe(-1 | 1).
+  // Wire one .lightbox element: views swap into the main image, zoom scales
+  // it 2x in place (drag to pan), and a horizontal swipe calls onSwipe(-1 | 1).
   function bindLightbox(box, onSwipe) {
     var main = box.querySelector('.lightbox__image');
     var picture = main && main.closest('picture');
+    var stage = box.querySelector('.lightbox__stage');
     var note = box.querySelector('.lightbox__view-caption');
     var zoomButton = box.querySelector('.lightbox__zoom');
     var views = [].slice.call(box.querySelectorAll('.lightbox__views a[data-avif]'));
     var at = 0;
+
+    // Zoom: scale(2) on the image, panned by dragging within its bounds. The
+    // image's sizes doubles meanwhile so the browser loads a sharper source.
+    var SCALE = 2, zoomed = false, panX = 0, panY = 0;
+    var sized = picture ? [].slice.call(picture.querySelectorAll('source, img')) : [];
+    var sizes = sized.map(function (el) { return el.getAttribute('sizes'); });
+    function applyPan() {
+      main.style.transform = zoomed ?
+        'translate(' + panX + 'px, ' + panY + 'px) scale(' + SCALE + ')' : '';
+    }
+    function setZoom(on) {
+      if (!main || !zoomButton) return;
+      zoomed = on;
+      panX = panY = 0;
+      box.classList.toggle('lightbox--zoomed', on);
+      sized.forEach(function (el, k) {
+        if (sizes[k]) el.setAttribute('sizes', on ? SCALE * 100 + 'vw' : sizes[k]);
+      });
+      applyPan();
+      zoomButton.setAttribute('aria-pressed', String(on));
+      zoomButton.setAttribute('aria-label', on ? 'Reset zoom' : 'Zoom image');
+    }
+    function bounds() {
+      var w = main.offsetWidth, h = main.offsetHeight;
+      return { x: w * (SCALE - 1) / 2, y: h * (SCALE - 1) / 2 };
+    }
+    function clamp(v, max) { return Math.max(-max, Math.min(max, v)); }
+
     function show(n) {
       if (!views.length || !main) return;
+      setZoom(false);
       at = (n + views.length) % views.length;
       var view = views[at];
       var sources = picture.querySelectorAll('source');
@@ -60,7 +69,6 @@
       main.width = +view.getAttribute('data-w');
       main.height = +view.getAttribute('data-h');
       main.alt = view.getAttribute('data-alt') || '';
-      if (zoomButton) zoomButton.setAttribute('data-zoom', view.getAttribute('data-zoom'));
       if (note) note.textContent = view.getAttribute('data-caption') || '';
       views.forEach(function (link, k) {
         if (k === at) link.setAttribute('aria-current', 'true');
@@ -74,40 +82,61 @@
         show(n);
       });
     });
-    var swiped = false;
-    if (zoomButton && window.HTMLDialogElement) {
+    if (zoomButton && main) {
       zoomButton.hidden = false;
       zoomButton.addEventListener('click', function (ev) {
         ev.stopPropagation();
-        zoom(zoomButton.getAttribute('data-zoom'), main && main.alt);
+        setZoom(!zoomed);
       });
     }
-    if (main) {
-      main.addEventListener('click', function () {
-        if (swiped) { swiped = false; return; }
-        if (zoomButton && !zoomButton.hidden) zoomButton.click();
-      });
-    }
-    var stage = box.querySelector('.lightbox__stage');
-    var startX = null, startY = 0;
-    if (stage) {
+
+    // One pointer gesture on the stage: a drag pans while zoomed, a
+    // horizontal swipe pages otherwise, and a plain tap toggles zoom.
+    var start = null;
+    if (stage && main) {
       stage.addEventListener('pointerdown', function (ev) {
-        if (ev.pointerType === 'mouse') return;
-        startX = ev.clientX; startY = ev.clientY;
+        if (ev.button) return;
+        start = { x: ev.clientX, y: ev.clientY, panX: panX, panY: panY, moved: false,
+                  onImage: ev.target === main };
+        if (zoomed) {
+          stage.setPointerCapture(ev.pointerId);
+          main.classList.add('is-dragging');
+          ev.preventDefault();
+        }
+      });
+      stage.addEventListener('pointermove', function (ev) {
+        if (!start) return;
+        var dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) start.moved = true;
+        if (!zoomed) return;
+        var b = bounds();
+        panX = clamp(start.panX + dx, b.x);
+        panY = clamp(start.panY + dy, b.y);
+        applyPan();
       });
       stage.addEventListener('pointerup', function (ev) {
-        if (startX === null) return;
-        var dx = ev.clientX - startX, dy = ev.clientY - startY;
-        startX = null;
-        if (Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) {
-          swiped = true;   // the tap that ends a swipe must not zoom
+        if (!start) return;
+        var dx = ev.clientX - start.x, dy = ev.clientY - start.y;
+        var moved = start.moved, onImage = start.onImage;
+        start = null;
+        main.classList.remove('is-dragging');
+        if (!moved) {
+          if (onImage && zoomButton) setZoom(!zoomed);
+        } else if (!zoomed && ev.pointerType !== 'mouse' &&
+                   Math.abs(dx) > 60 && Math.abs(dx) > 2 * Math.abs(dy)) {
           onSwipe(dx < 0 ? 1 : -1);
         }
+      });
+      stage.addEventListener('pointercancel', function () {
+        start = null;
+        main.classList.remove('is-dragging');
       });
     }
     return {
       step: function (d) { if (views.length) show(at + d); },
-      hasViews: views.length > 0
+      hasViews: views.length > 0,
+      zoomed: function () { return zoomed; },
+      zoom: function (on) { setZoom(on === undefined ? !zoomed : on); }
     };
   }
 
@@ -373,8 +402,9 @@
     });
     addEventListener('keydown', function (ev) {
       if (!overlay || modified(ev) || typing()) return;
-      if (zoomDialog && zoomDialog.open) return;
-      if (ev.key === 'Escape') { ev.preventDefault(); closeOverlay(); }
+      if (ev.key === 'Escape' && controls && controls.zoomed()) { ev.preventDefault(); controls.zoom(false); }
+      else if (ev.key === 'Escape') { ev.preventDefault(); closeOverlay(); }
+      else if (ev.key.toLowerCase() === 'z' && controls) controls.zoom();
       else if (ev.key === 'ArrowLeft') step(-1);
       else if (ev.key === 'ArrowRight') step(1);
       else if (ev.key === 'ArrowDown' && controls && controls.hasViews) { ev.preventDefault(); controls.step(1); }
@@ -442,8 +472,9 @@
     var controls = bindLightbox(box, function (d) { go(d < 0 ? 'prev' : 'next'); });
     addEventListener('keydown', function (ev) {
       if (modified(ev) || ev.defaultPrevented || typing()) return;
-      if (zoomDialog && zoomDialog.open) return;
-      if (ev.key === 'ArrowLeft') go('prev');
+      if (ev.key === 'Escape' && controls.zoomed()) controls.zoom(false);
+      else if (ev.key.toLowerCase() === 'z') controls.zoom();
+      else if (ev.key === 'ArrowLeft') go('prev');
       else if (ev.key === 'ArrowRight') go('next');
       else if (ev.key === 'Escape') go('up');
       else if (ev.key === 'ArrowDown' && controls.hasViews) { ev.preventDefault(); controls.step(1); }
