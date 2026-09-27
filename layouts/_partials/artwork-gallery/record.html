@@ -3,30 +3,26 @@
        Context: dict "page" <piece> "index" <int> "collection" <collection> */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $info := partialCached "artwork-gallery/info.html" .page .page.RelPermalink -}}
+{{- $set := $info.thumbSet -}}
+{{- /* A justified grid keeps each image's shape instead of the square crop. */ -}}
+{{- $justified := eq (.collection.Params.grid | default $cfg.grid) "justified" -}}
+{{- if $justified -}}
+  {{- $widths := slice -}}
+  {{- range $cfg.thumbWidths -}}{{- $widths = $widths | append (div (mul . 3) 2) -}}{{- end -}}
+  {{- $set = partialCached "artwork-gallery/derivatives.html"
+      (dict "image" $info.source "widths" $widths "fallback" 960) .page.RelPermalink $info.source.Name "row" -}}
+{{- end -}}
 {{- $record := dict
   "i" .index
   "slug" .page.File.ContentBaseName
   "href" .page.RelPermalink
-  "image" $info.largeWebp.RelPermalink
   "title" $info.title
   "meta" $info.status
   "alt" $info.alt
-  "documentTitle" $info.documentTitle
-  "thumbWebp" $info.thumbWebp.RelPermalink
-  "thumb" $info.thumb.RelPermalink
+  "avif" $set.avif
+  "webp" $set.webp
+  "jpg" $set.jpg.RelPermalink
+  "w" $set.width
+  "h" $set.height
 -}}
-{{- with $info.views -}}
-  {{- $views := slice (dict "src" $info.largeWebp.RelPermalink "thumb" $info.thumbWebp.RelPermalink "caption" "" "alt" $info.alt) -}}
-  {{- range . -}}
-    {{- $views = $views | append (dict "src" .largeWebp.RelPermalink "thumb" .thumbWebp.RelPermalink "caption" .caption "alt" .alt) -}}
-  {{- end -}}
-  {{- $record = merge $record (dict "views" $views) -}}
-{{- end -}}
-{{- /* A justified grid keeps each image's shape instead of the square crop. */ -}}
-{{- if eq (.collection.Params.grid | default $cfg.grid) "justified" -}}
-  {{- $spec := printf "fit %dx%d" (div (mul $cfg.thumbSize 3) 2) (div (mul $cfg.thumbSize 3) 2) -}}
-  {{- $jpg := $info.source.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $spec $cfg.thumbQuality)) -}}
-  {{- $webp := $info.source.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $spec $cfg.webpThumbQuality)) -}}
-  {{- $record = merge $record (dict "thumb" $jpg.RelPermalink "thumbWebp" $webp.RelPermalink "w" $jpg.Width "h" $jpg.Height) -}}
-{{- end -}}
 {{- return $record -}}

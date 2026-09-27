@@ -1,0 +1,37 @@
+{{- /* The resized versions of one image for a <picture>: AVIF and WebP srcsets
+       at the requested widths (never wider than the source), plus a JPEG for
+       old browsers, structured data and sharing.
+       Call with partialCached "artwork-gallery/derivatives.html"
+         (dict "image" <resource> "widths" <slice> "square" <bool> "fallback" <int>)
+         <page permalink> <image name> <variant key>
+       Quality and encoder settings come from the site's [imaging.avif],
+       [imaging.webp] and [imaging.jpeg] configuration. */ -}}
+{{- $img := .image -}}
+{{- $limit := $img.Width -}}
+{{- if .square -}}{{- $limit = math.Min $img.Width $img.Height -}}{{- end -}}
+{{- $widths := slice -}}
+{{- range .widths -}}{{- if le . $limit -}}{{- $widths = $widths | append . -}}{{- end -}}{{- end -}}
+{{- if not $widths -}}{{- $widths = slice (int $limit) -}}{{- end -}}
+{{- $spec := "resize %dx %s" -}}
+{{- if .square -}}{{- $spec = "fill %dx%[1]d Center %s" -}}{{- end -}}
+{{- $sets := dict -}}
+{{- $largest := false -}}
+{{- range $format := slice "avif" "webp" -}}
+  {{- $candidates := slice -}}
+  {{- range $widths -}}
+    {{- $r := $img.Filter images.AutoOrient (images.Process (printf $spec . $format)) -}}
+    {{- $candidates = $candidates | append (printf "%s %dw" $r.RelPermalink $r.Width) -}}
+    {{- if eq $format "webp" -}}{{- $largest = $r -}}{{- end -}}
+  {{- end -}}
+  {{- $sets = merge $sets (dict $format (delimit $candidates ", ")) -}}
+{{- end -}}
+{{- $fallback := math.Min (.fallback | default 1200) $limit | int -}}
+{{- $jpg := $img.Filter images.AutoOrient (images.Process (printf $spec $fallback "jpg")) -}}
+{{- return dict
+  "avif" $sets.avif
+  "webp" $sets.webp
+  "jpg" $jpg
+  "width" $jpg.Width
+  "height" $jpg.Height
+  "largest" $largest
+-}}

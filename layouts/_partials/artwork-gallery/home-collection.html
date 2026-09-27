@@ -1,7 +1,7 @@
 {{- /* The collection a piece belongs to for navigation: its first series in
-       the first collection taxonomy it uses, else the gallery. Previous/next,
-       the link back, breadcrumbs and the lightbox behind a directly opened
-       piece all follow it. */ -}}
+       the first collection taxonomy it uses, else the gallery. The piece
+       page's previous/next, link back and breadcrumbs are written for it;
+       gallery.js switches to the collection a visitor came from. */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $home := partialCached "artwork-gallery/root.html" . -}}
 {{- $found := false -}}

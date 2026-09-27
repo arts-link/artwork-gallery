@@ -27,15 +27,15 @@
 {{- if not $src -}}
   {{- errorf "artwork-gallery: %s has no artwork image in its folder" .File.Path -}}
 {{- end -}}
-{{- $thumbSpec := printf "fill %dx%d Center" $cfg.thumbSize $cfg.thumbSize -}}
-{{- $largeSpec := printf "fit %dx%d" $cfg.largeSize $cfg.largeSize -}}
-{{- $thumb := $src.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $thumbSpec $cfg.thumbQuality)) -}}
-{{- $thumbWebp := $src.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $thumbSpec $cfg.webpThumbQuality)) -}}
-{{- $large := $src.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $largeSpec $cfg.largeQuality)) -}}
-{{- $largeWebp := $src.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality)) -}}
+{{- /* Resized versions: a square set for grid tiles and a full set for the
+       piece page. The JPEGs double as the structured-data and sitemap images. */ -}}
+{{- $largeSet := partialCached "artwork-gallery/derivatives.html"
+    (dict "image" $src "widths" $cfg.largeWidths "fallback" 1600) .RelPermalink $src.Name "large" -}}
+{{- $thumbSet := partialCached "artwork-gallery/derivatives.html"
+    (dict "image" $src "widths" $cfg.thumbWidths "square" true "fallback" 640) .RelPermalink $src.Name "square" -}}
 
-{{- /* Other photos in the folder are further views of the piece, in the
-       folder's display order, each with a caption. */ -}}
+{{- /* Other photos in the folder are further views of the piece, in file-name
+       order, each with a caption. */ -}}
 {{- $views := slice -}}
 {{- range partial "artwork-gallery/images.html" . -}}
   {{- if ne .Name $src.Name -}}
@@ -43,10 +43,10 @@
     {{- $views = $views | append (dict
       "caption" $caption
       "alt" (.Params.alt | default (cond (ne $caption "") (printf "%s — %s" $displayTitle $caption) $alt))
-      "thumb" (.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $thumbSpec $cfg.thumbQuality)))
-      "thumbWebp" (.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $thumbSpec $cfg.webpThumbQuality)))
-      "large" (.Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $largeSpec $cfg.largeQuality)))
-      "largeWebp" (.Filter images.AutoOrient (images.Process (printf "%s q%d webp" $largeSpec $cfg.webpLargeQuality)))
+      "largeSet" (partialCached "artwork-gallery/derivatives.html"
+          (dict "image" . "widths" $cfg.largeWidths "fallback" 1600) $.RelPermalink .Name "large")
+      "thumbSet" (partialCached "artwork-gallery/derivatives.html"
+          (dict "image" . "widths" (slice 160 320) "square" true "fallback" 320) $.RelPermalink .Name "view")
     ) -}}
   {{- end -}}
 {{- end -}}
@@ -55,7 +55,7 @@
        uncropped on a 1200 x 630 field of its own dominant colour. */ -}}
 {{- $social := .Resources.GetMatch "social.*" -}}
 {{- if not $social -}}
-  {{- $fit := $src.Filter images.AutoOrient (images.Process "fit 1120x560 q85 jpg") -}}
+  {{- $fit := $src.Filter images.AutoOrient (images.Process "fit 1120x560 jpg") -}}
   {{- $colour := index $src.Colors 0 | default "#ffffff" -}}
   {{- $left := div (sub 1200 $fit.Width) 2 -}}
   {{- $top := div (sub 630 $fit.Height) 2 -}}
@@ -73,11 +73,11 @@
   "seoTitle" $seoTitle
   "documentTitle" (printf "%s | %s" $seoTitle $artist)
   "description" $description
-  "thumb" $thumb
-  "thumbWebp" $thumbWebp
-  "large" $large
+  "thumb" $thumbSet.jpg
+  "large" $largeSet.jpg
+  "thumbSet" $thumbSet
+  "largeSet" $largeSet
   "source" $src
-  "largeWebp" $largeWebp
   "social" $social
   "views" $views
 -}}

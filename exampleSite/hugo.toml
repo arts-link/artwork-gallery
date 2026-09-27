@@ -27,5 +27,12 @@ disableKinds = ["rss"]
   batchSize = 4
   collectionTaxonomies = ["sculpture", "collage"]
 
-[imaging.exif]
-  includeFields = "ImageDescription"
+# Encoder settings for the component's image derivatives (Hugo 0.163+).
+[imaging]
+  resampleFilter = "CatmullRom"
+[imaging.avif]
+  quality = 55
+[imaging.webp]
+  quality = 80
+[imaging.jpeg]
+  quality = 82

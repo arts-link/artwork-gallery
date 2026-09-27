@@ -2,7 +2,7 @@
 
 A Hugo theme component for artist portfolios. Every piece gets its own page
 with resized images and structured data; pieces are grouped into series by
-medium; everything is shown in a progressively loaded grid with a lightbox.
+medium; grids load progressively and every tile opens the piece's own page.
 
 It provides no page chrome. Stack it in front of the theme that does.
 
@@ -10,7 +10,7 @@ It provides no page chrome. Stack it in front of the theme that does.
 
 Not yet released: it is still being shaped, and changes may break the sites
 that try it. Pin a site's submodule to a commit and upgrade deliberately.
-Requires Hugo extended 0.146 or later.
+Requires Hugo extended 0.163 or later (for AVIF output).
 
 ```sh
 git submodule add https://github.com/arts-link/artwork-gallery.git themes/artwork-gallery
@@ -87,9 +87,8 @@ image.
 
 **Further views:** every other photo in the folder, in file-name order
 (`detail_01`, `detail_02`… keeps ten or more in order). They appear under the
-main image as a strip of thumbnails, or full size with `views: stack`, and in
-the lightbox as buttons under the caption (arrow up and down step through
-them). A view's caption is, in order of preference, its `resources` title, the
+main image as a strip of thumbnails that swap into the main image (arrow up
+and down step through them), or full size with `views: stack`. A view's caption is, in order of preference, its `resources` title, the
 photo's EXIF description, or its file name made readable (`detail_1` becomes
 "Detail 1"; camera names give none). `hidden: true` keeps a photo out:
 
@@ -102,13 +101,7 @@ resources:
       hidden: true
 ```
 
-Hugo 0.155 and later read EXIF descriptions without configuration; older
-versions need:
-
-```toml
-[imaging.exif]
-  includeFields = "ImageDescription"
-```
+Hugo reads EXIF descriptions without configuration.
 
 **Sharing card:** a `social.*` file in the folder is used as the 1200 x 630
 card; without one, the main image is placed uncropped on a field of its own
@@ -150,9 +143,57 @@ an image in that folder (the first by name, or one marked `cover: true` in
 medium's own page is `content/sculpture/_index.md`.
 
 A piece's **home collection** is its first series in the first collection
-taxonomy it uses, else the gallery. Previous/next, the link back, the
-breadcrumbs (Home › Sculpture › Boxes › Box 2) and the grid behind the
-lightbox when a piece's URL is opened directly all follow it.
+taxonomy it uses, else the gallery. Its page is written for that collection:
+previous/next, the link back and the breadcrumbs (Home › Sculpture › Boxes ›
+Box 2). Opened from another series or the gallery grid, the page follows that
+collection instead, so browsing a series stays in the series; its URL never
+changes.
+
+## Browsing
+
+A tile is a plain link to the piece's page. On the way:
+
+- The page is prerendered while the pointer rests on the tile (speculation
+  rules, Chromium), and the tile's image morphs into the piece's main image
+  (cross-document view transitions: Chromium and Safari 18.2+; others simply
+  load the page). Coming back morphs it into its tile again.
+- The main image is plain HTML with high fetch priority: nothing waits on a
+  script to show the work.
+- On the piece page, arrow left and right (or a swipe) go to the previous or
+  next piece in the collection it was opened from; arrow up and down step
+  through its views. Selecting the image opens the largest version at full
+  size, scrollable, in a dialog.
+
+All of it comes from one deferred script of about 3 KB (gzipped); without it
+every page and link still works.
+
+## Images
+
+Every image is a `<picture>` with AVIF and WebP `srcset`s and a JPEG
+fallback, never wider than its source:
+
+- piece images at `largeWidths` (default 800, 1200, 1600 and 2400; keep
+  masters about 3000px on the long edge so the larger sizes exist);
+- grid tiles and cards at `thumbWidths` (default 320 and 640, square; 1.5x
+  those, uncropped, in a justified grid).
+
+Encoder settings are the site's own, since Hugo does not take them from a
+theme. A good starting point:
+
+```toml
+[imaging]
+  resampleFilter = "CatmullRom"
+[imaging.avif]
+  quality = 55
+[imaging.webp]
+  quality = 80
+[imaging.jpeg]
+  quality = 82
+```
+
+AVIF encoding is slow: a cold build of 150 pieces takes several minutes.
+Hugo caches every derivative in `resources/_gen`, so builds that keep that
+folder between runs only process new or changed images.
 
 ## Site settings
 
@@ -165,8 +206,8 @@ lightbox when a piece's URL is opened directly all follow it.
   grid = "square"            # or "justified": rows that keep each image's shape
   views = "strip"            # further photos of a piece: "strip" or "stack"
   collectionTaxonomies = []  # e.g. ["collage", "sculpture"]
-  thumbSize = 640            # grid thumbnails (justified grids use 1.5x)
-  largeSize = 1600           # long edge of the lightbox image
+  thumbWidths = [320, 640]   # grid tiles and cards
+  largeWidths = [800, 1200, 1600, 2400]   # piece images
 ```
 
 `grid` can also be set on the gallery's or a series' `_index.md`.

@@ -1,0 +1,11 @@
+{{- /* A <picture> for one derivatives set.
+       Context: dict "set" <derivatives> "sizes" <string> "alt" <string>
+                     "class" <string> "eager" <bool> "priority" <bool> */ -}}
+{{- $s := .set -}}
+<picture>
+  <source type="image/avif" srcset="{{ $s.avif }}" sizes="{{ .sizes }}">
+  <source type="image/webp" srcset="{{ $s.webp }}" sizes="{{ .sizes }}">
+  <img{{ with .class }} class="{{ . }}"{{ end }} src="{{ $s.jpg.RelPermalink }}" alt="{{ .alt }}" width="{{ $s.width }}" height="{{ $s.height }}"
+       {{- if .priority }} fetchpriority="high"{{ else if not .eager }} loading="lazy"{{ end }} decoding="async">
+</picture>
+{{- /**/ -}}

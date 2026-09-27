@@ -17,6 +17,6 @@
 {{- with .Get "limit" -}}{{- $pages = first (int .) $pages -}}{{- end -}}
 <ul class="gallery gallery--embed">
 {{- range $i, $p := $pages }}
-{{ partial "artwork-gallery/tile.html" (dict "record" (partial "artwork-gallery/record.html" (dict "page" $p "index" $i "collection" $collection)) "eager" false) }}
+{{ partial "artwork-gallery/tile.html" (dict "record" (partial "artwork-gallery/record.html" (dict "page" $p "index" $i "collection" $collection)) "sizes" "(max-width: 600px) calc(100vw - 40px), 330px") }}
 {{- end }}
 </ul>

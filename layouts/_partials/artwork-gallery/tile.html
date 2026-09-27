@@ -1,16 +1,14 @@
-{{- /* One gallery tile. Context: dict "record" <record> "eager" <bool>. */ -}}
+{{- /* One gallery tile: a link to the piece's page. The same markup is built
+       by gallery.js for later batches.
+       Context: dict "record" <record> "eager" <bool> "priority" <bool> "sizes" <string> */ -}}
 {{- $r := .record -}}
-    <li class="tile" id="{{ $r.slug }}"{{ with $r.w }} style="--ar: {{ div (float .) $r.h | lang.FormatNumber 4 }}"{{ end }}>
-      <a href="{{ $r.href }}" data-i="{{ $r.i }}" data-slug="{{ $r.slug }}"
-         data-image="{{ $r.image }}"
-         data-title="{{ $r.title }}" data-meta="{{ $r.meta }}"
-         data-alt="{{ $r.alt }}"
-         data-document-title="{{ $r.documentTitle }}"
-         {{- with $r.views }} data-views="{{ . | jsonify }}"{{ end }}>
+    <li class="tile" id="{{ $r.slug }}" style="--ar: {{ div (float $r.w) $r.h | lang.FormatNumber 4 }}">
+      <a href="{{ $r.href }}" data-slug="{{ $r.slug }}">
         <picture>
-          <source srcset="{{ $r.thumbWebp }}" type="image/webp">
-          <img src="{{ $r.thumb }}" alt="{{ $r.alt }}"
-               width="{{ $r.w | default 640 }}" height="{{ $r.h | default 640 }}" {{ if .eager }}loading="eager" fetchpriority="high"{{ else }}loading="lazy"{{ end }}>
+          <source type="image/avif" srcset="{{ $r.avif }}" sizes="{{ .sizes }}">
+          <source type="image/webp" srcset="{{ $r.webp }}" sizes="{{ .sizes }}">
+          <img src="{{ $r.jpg }}" alt="{{ $r.alt }}" width="{{ $r.w }}" height="{{ $r.h }}"
+               {{- if .priority }} fetchpriority="high"{{ else if not .eager }} loading="lazy"{{ end }} decoding="async">
         </picture>
         {{- if or $r.title $r.meta }}
         <span class="tile__caption">

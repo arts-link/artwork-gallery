@@ -8,14 +8,10 @@
   grid = "square"            # or "justified": rows that keep each image's shape
   views = "strip"            # further photos of a piece: "strip" of thumbnails or "stack" full size
   collectionTaxonomies = []  # taxonomies whose terms are series, e.g. ["collage", "sculpture"]
-  thumbSize = 640
-  largeSize = 1600
-  thumbQuality = 82
-  largeQuality = 85
-  webpThumbQuality = 80
-  webpLargeQuality = 82
+  thumbWidths = [320, 640]                # grid tiles and cards (justified grids use 1.5x)
+  largeWidths = [800, 1200, 1600, 2400]   # piece images; never wider than the source
 
 [module]
   [module.hugoVersion]
     extended = true
-    min = "0.146.0"
+    min = "0.163.0"

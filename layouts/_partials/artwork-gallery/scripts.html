@@ -1,0 +1,4 @@
+{{- /* The component's script, plus speculation rules that prerender pieces
+       and series on hover, so the next page is ready before the click. */ -}}
+<script src="{{ (partial "artwork-gallery/script.html" "gallery").RelPermalink }}" defer></script>
+<script type="speculationrules">{"prerender":[{"where":{"selector_matches":".tile a, .ag-card a, .artwork__nav a, .artwork__series a"},"eagerness":"moderate"}]}</script>

@@ -37,7 +37,7 @@
       {{- $imageAlt = $first.title | default (printf "%s artwork by %s" $cfg.artform $artist) -}}
     {{- end -}}
     {{- if and $image (eq .Kind "taxonomy") -}}
-      {{- $image = $image.Filter images.AutoOrient (images.Process (printf "fit %dx%d q%d jpg" $cfg.largeSize $cfg.largeSize $cfg.largeQuality)) -}}
+      {{- $image = $image.Filter images.AutoOrient (images.Process "fit 1600x1600 jpg") -}}
     {{- end -}}
     {{- $result = dict
       "pageType" (cond (eq .Kind "taxonomy") "CollectionPage" "ImageGallery")

@@ -1,14 +1,16 @@
-{{- /* The tile grid for a collection's pieces.
+{{- /* The tile grid for a collection's pieces. The first row loads eagerly
+       and the first tile is the page's priority image; the rest are lazy.
        Context: dict "page" <collection> "records" <first records> "batches" <urls> */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
-{{- $artist := site.Params.artist | default site.Title -}}
 {{- $page := .page -}}
-{{- $justified := eq ($page.Params.grid | default $cfg.grid) "justified" }}
-  <ul class="gallery{{ if $justified }} gallery--justified{{ end }}" id="gallery" data-gallery-path="{{ $page.RelPermalink }}"
-      data-gallery-title="{{ printf "%s | %s" ($page.Params.seoTitle | default $page.Title) $artist }}"
+{{- $justified := eq ($page.Params.grid | default $cfg.grid) "justified" -}}
+{{- $sizes := "(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) 50vw, 330px" -}}
+{{- if $justified -}}{{- $sizes = "(max-width: 600px) 70vw, 480px" -}}{{- end }}
+  <ul class="gallery{{ if $justified }} gallery--justified{{ end }}" id="gallery"
+      data-gallery-path="{{ $page.RelPermalink }}" data-sizes="{{ $sizes }}"
       data-batches="{{ .batches | default slice | jsonify }}">
 {{- range $i, $r := .records }}
-{{ partial "artwork-gallery/tile.html" (dict "record" $r "eager" (eq $i 0)) }}
+{{ partial "artwork-gallery/tile.html" (dict "record" $r "eager" (lt $i 3) "priority" (eq $i 0) "sizes" $sizes) }}
 {{- end }}
   </ul>
 {{- if .batches }}

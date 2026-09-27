@@ -1,17 +1,13 @@
 {{- /* A card for a series or collection taxonomy: cover image, title and a count. */ -}}
 {{- $cfg := partialCached "artwork-gallery/config.html" . -}}
 {{- $cover := partialCached "artwork-gallery/cover.html" . .RelPermalink -}}
-{{- $count := partialCached "artwork-gallery/count.html" . .RelPermalink -}}
+{{- $count := partialCached "artwork-gallery/count.html" . .RelPermalink }}
     <li class="ag-card">
       <a href="{{ .RelPermalink }}">
 {{- with $cover }}
-{{- $spec := printf "fill %dx%d Center" $cfg.thumbSize $cfg.thumbSize }}
-{{- $jpg := .Filter images.AutoOrient (images.Process (printf "%s q%d jpg" $spec $cfg.thumbQuality)) }}
-{{- $webp := .Filter images.AutoOrient (images.Process (printf "%s q%d webp" $spec $cfg.webpThumbQuality)) }}
-        <picture>
-          <source srcset="{{ $webp.RelPermalink }}" type="image/webp">
-          <img src="{{ $jpg.RelPermalink }}" alt="" width="{{ $jpg.Width }}" height="{{ $jpg.Height }}" loading="lazy">
-        </picture>
+{{- $set := partialCached "artwork-gallery/derivatives.html"
+    (dict "image" . "widths" $cfg.thumbWidths "square" true "fallback" 640) $.RelPermalink .Name "card" }}
+        {{ partial "artwork-gallery/picture.html" (dict "set" $set "alt" "" "sizes" "(max-width: 600px) calc(100vw - 40px), (max-width: 1000px) 50vw, 330px") }}
 {{- end }}
         <span class="ag-card__title">{{ .LinkTitle }}</span>
         <span class="ag-card__count">{{ $count.label }}</span>

@@ -1,0 +1,23 @@
+{{- /* Every collection a piece appears in, with its neighbours there: the
+       gallery and each series it lists. The page is written for the piece's
+       home collection; gallery.js switches to the one the visitor came from.
+       Returns dict "home" <collection page> "list" <slice of dicts:
+         path, title, page, prev, next (pages or false)> */ -}}
+{{- $cfg := partialCached "artwork-gallery/config.html" . -}}
+{{- $collections := slice (partialCached "artwork-gallery/root.html" .) -}}
+{{- range $cfg.collectionTaxonomies -}}
+  {{- range $.GetTerms . -}}{{- $collections = $collections | append . -}}{{- end -}}
+{{- end -}}
+{{- $list := slice -}}
+{{- range $c := $collections -}}
+  {{- $pieces := partialCached "artwork-gallery/artworks.html" $c $c.RelPermalink -}}
+  {{- $prev := false -}}{{- $next := false -}}
+  {{- range $i, $p := $pieces -}}
+    {{- if eq $p $ -}}
+      {{- if gt $i 0 -}}{{- $prev = index $pieces (sub $i 1) -}}{{- end -}}
+      {{- if lt (add $i 1) (len $pieces) -}}{{- $next = index $pieces (add $i 1) -}}{{- end -}}
+    {{- end -}}
+  {{- end -}}
+  {{- $list = $list | append (dict "path" $c.RelPermalink "title" $c.LinkTitle "page" $c "prev" $prev "next" $next) -}}
+{{- end -}}
+{{- return dict "home" (partialCached "artwork-gallery/home-collection.html" . .RelPermalink) "list" $list -}}

@@ -1,5 +1,4 @@
-{{- /* Fingerprinted URL of one component script: lightbox, gallery-progressive
-       or gallery-entry. */ -}}
+{{- /* Fingerprinted URL of one component script, by name (e.g. "gallery"). */ -}}
 {{- $js := resources.Get (printf "artwork-gallery/js/%s.js" .) -}}
 {{- $js = $js | resources.Copy (printf "assets/js/%s.js" .) -}}
 {{- if hugo.IsProduction -}}{{- $js = $js | minify -}}{{- end -}}
