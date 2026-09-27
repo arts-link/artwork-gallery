@@ -162,11 +162,13 @@
 .lightbox__cap { max-width: 42rem; }
 .lightbox__title {
   margin: 0;
+  color: var(--ag-lightbox-ink);
   font: normal normal normal 22px/1.3 var(--ag-title-font);
 }
 .lightbox__meta,
 .lightbox__view-caption {
   margin: 2px 0 0;
+  color: var(--ag-lightbox-ink);
   font: normal normal normal 16px/1.4 var(--ag-text-font);
 }
 .lightbox__view-caption:empty { display: none; }
