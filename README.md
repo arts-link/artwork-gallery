@@ -9,13 +9,14 @@ It provides no page chrome. Stack it in front of the theme that does.
 
 ## Installation
 
-Not yet released: it is still being shaped, and changes may break the sites
-that try it. Pin a site's submodule to a commit and upgrade deliberately.
-Requires Hugo extended 0.163 or later (for AVIF output).
+The current release is **0.1.0** (tag `v0.1.0`). Releases before 1.0 may
+change front matter or layouts, so pin a site's submodule to a tag and read
+the changelog before upgrading. Requires Hugo extended 0.163 or later (for
+AVIF output).
 
 ```sh
 git submodule add https://github.com/arts-link/artwork-gallery.git themes/artwork-gallery
-git -C themes/artwork-gallery checkout <commit>
+git -C themes/artwork-gallery checkout v0.1.0
 ```
 
 ```toml

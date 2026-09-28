@@ -1,8 +1,8 @@
 # Changelog
 
-## Unreleased
+## 0.1.0 (2026-09-28)
 
-Nothing is tagged yet; the first release will be 0.1.0.
+First release.
 
 - A page per piece: resized JPEG and WebP images, status, VisualArtwork and
   BreadcrumbList JSON-LD, and a generated sharing card when the folder has
