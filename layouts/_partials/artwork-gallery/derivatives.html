@@ -1,23 +1,34 @@
 {{- /* The resized versions of one image for a <picture>: AVIF and WebP srcsets
        at the requested widths (never wider than the source), plus a JPEG for
        old browsers, structured data and sharing.
-       With "native" true (piece images), the source's own width is added as
-       the largest size when it is at least 10% wider than the largest listed
+       With "max", no size is wider than that. With "native" true (piece
+       images), the source's own width (or "max", if smaller) is added as the
+       largest size when it is at least 10% wider than the largest listed
        width it reaches, so no piece stops short of its full resolution.
+       Sizes are measured after EXIF orientation, so a photo stored sideways
+       is never upscaled.
        Call with partialCached "artwork-gallery/derivatives.html"
-         (dict "image" <resource> "widths" <slice> "square" <bool> "native" <bool> "fallback" <int>)
+         (dict "image" <resource> "widths" <slice> "square" <bool> "native" <bool>
+               "max" <int> "fallback" <int>)
          <page permalink> <image name> <variant key>
        Quality and encoder settings come from the site's [imaging.avif],
        [imaging.webp] and [imaging.jpeg] configuration. */ -}}
 {{- $img := .image -}}
-{{- $limit := $img.Width -}}
-{{- if .square -}}{{- $limit = math.Min $img.Width $img.Height -}}{{- end -}}
+{{- $width := $img.Width -}}
+{{- $height := $img.Height -}}
+{{- with $img.Meta -}}
+  {{- if ge (int .Orientation) 5 -}}{{- $width = $img.Height -}}{{- $height = $img.Width -}}{{- end -}}
+{{- end -}}
+{{- $limit := $width -}}
+{{- if .square -}}{{- $limit = math.Min $width $height -}}{{- end -}}
+{{- $cap := $limit -}}
+{{- with .max -}}{{- $cap = math.Min $limit . -}}{{- end -}}
 {{- $widths := slice -}}
-{{- range .widths -}}{{- if le . $limit -}}{{- $widths = $widths | append . -}}{{- end -}}{{- end -}}
-{{- if not $widths -}}{{- $widths = slice (int $limit) -}}{{- end -}}
+{{- range .widths -}}{{- if le . $cap -}}{{- $widths = $widths | append . -}}{{- end -}}{{- end -}}
+{{- if not $widths -}}{{- $widths = slice (int $cap) -}}{{- end -}}
 {{- if and .native (not .square) -}}
   {{- $largest := index $widths (sub (len $widths) 1) -}}
-  {{- if ge (int $limit) (mul $largest 1.1) -}}{{- $widths = $widths | append (int $limit) -}}{{- end -}}
+  {{- if ge (int $cap) (mul $largest 1.1) -}}{{- $widths = $widths | append (int $cap) -}}{{- end -}}
 {{- end -}}
 {{- $spec := "resize %dx %s" -}}
 {{- if .square -}}{{- $spec = "fill %dx%[1]d Center %s" -}}{{- end -}}

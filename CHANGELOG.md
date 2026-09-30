@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.2.1 (2026-09-30)
+
+- Piece images are never wider than the new `maxWidth` setting (default
+  2400). Since 0.2.0 a large photo, such as a 4032px phone picture, published
+  a derivative at its full width.
+- Image widths are measured after EXIF orientation. A photo stored sideways
+  (orientation 5-8) was sized by its stored width, so a 3024px-wide portrait
+  stored as 4032x3024 got upscaled 2400 and 4032 derivatives. The JPEG
+  fallback had the same fault.
+
 ## 0.2.0 (2026-09-30)
 
 - Piece images and their further views now include the photo's own width as
