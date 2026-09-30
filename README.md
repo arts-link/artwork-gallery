@@ -186,8 +186,10 @@ every page and link still works.
 Every image is a `<picture>` with AVIF and WebP `srcset`s and a JPEG
 fallback, never wider than its source:
 
-- piece images at `largeWidths` (default 800, 1200, 1600 and 2400; keep
-  masters about 3000px on the long edge so the larger sizes exist);
+- piece images at `largeWidths` (default 800, 1200, 1600 and 2400), plus the
+  photo's own width as the largest size when it is at least 10% wider than
+  the largest listed width it reaches, so a 1800px-wide portrait gets
+  800, 1200, 1600 and 1800 and every piece shows at full resolution;
 - grid tiles and cards at `thumbWidths` (default 320 and 640, square; 1.5x
   those, uncropped, in a justified grid).
 

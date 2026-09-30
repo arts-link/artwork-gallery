@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.0 (2026-09-30)
+
+- Piece images and their further views now include the photo's own width as
+  the largest size when it is at least 10% wider than the largest
+  `largeWidths` entry it reaches. Portrait photos (narrower than they are
+  tall) no longer stop at 1600px when the master is, say, 1800x2400. Grid
+  tiles, cards and the JPEG fallback are unchanged.
+
 ## 0.1.0 (2026-09-28)
 
 First release.

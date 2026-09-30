@@ -1,8 +1,11 @@
 {{- /* The resized versions of one image for a <picture>: AVIF and WebP srcsets
        at the requested widths (never wider than the source), plus a JPEG for
        old browsers, structured data and sharing.
+       With "native" true (piece images), the source's own width is added as
+       the largest size when it is at least 10% wider than the largest listed
+       width it reaches, so no piece stops short of its full resolution.
        Call with partialCached "artwork-gallery/derivatives.html"
-         (dict "image" <resource> "widths" <slice> "square" <bool> "fallback" <int>)
+         (dict "image" <resource> "widths" <slice> "square" <bool> "native" <bool> "fallback" <int>)
          <page permalink> <image name> <variant key>
        Quality and encoder settings come from the site's [imaging.avif],
        [imaging.webp] and [imaging.jpeg] configuration. */ -}}
@@ -12,6 +15,10 @@
 {{- $widths := slice -}}
 {{- range .widths -}}{{- if le . $limit -}}{{- $widths = $widths | append . -}}{{- end -}}{{- end -}}
 {{- if not $widths -}}{{- $widths = slice (int $limit) -}}{{- end -}}
+{{- if and .native (not .square) -}}
+  {{- $largest := index $widths (sub (len $widths) 1) -}}
+  {{- if ge (int $limit) (mul $largest 1.1) -}}{{- $widths = $widths | append (int $limit) -}}{{- end -}}
+{{- end -}}
 {{- $spec := "resize %dx %s" -}}
 {{- if .square -}}{{- $spec = "fill %dx%[1]d Center %s" -}}{{- end -}}
 {{- $sets := dict -}}

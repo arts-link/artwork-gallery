@@ -30,7 +30,7 @@
 {{- /* Resized versions: a square set for grid tiles and a full set for the
        piece page. The JPEGs double as the structured-data and sitemap images. */ -}}
 {{- $largeSet := partialCached "artwork-gallery/derivatives.html"
-    (dict "image" $src "widths" $cfg.largeWidths "fallback" 1600) .RelPermalink $src.Name "large" -}}
+    (dict "image" $src "widths" $cfg.largeWidths "native" true "fallback" 1600) .RelPermalink $src.Name "large" -}}
 {{- $thumbSet := partialCached "artwork-gallery/derivatives.html"
     (dict "image" $src "widths" $cfg.thumbWidths "square" true "fallback" 640) .RelPermalink $src.Name "square" -}}
 
@@ -44,7 +44,7 @@
       "caption" $caption
       "alt" (.Params.alt | default (cond (ne $caption "") (printf "%s — %s" $displayTitle $caption) $alt))
       "largeSet" (partialCached "artwork-gallery/derivatives.html"
-          (dict "image" . "widths" $cfg.largeWidths "fallback" 1600) $.RelPermalink .Name "large")
+          (dict "image" . "widths" $cfg.largeWidths "native" true "fallback" 1600) $.RelPermalink .Name "large")
       "thumbSet" (partialCached "artwork-gallery/derivatives.html"
           (dict "image" . "widths" (slice 160 320) "square" true "fallback" 320) $.RelPermalink .Name "view")
     ) -}}
