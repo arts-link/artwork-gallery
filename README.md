@@ -189,7 +189,10 @@ fallback, never wider than its source:
 - piece images at `largeWidths` (default 800, 1200, 1600 and 2400), plus the
   photo's own width as the largest size when it is at least 10% wider than
   the largest listed width it reaches, so a 1800px-wide portrait gets
-  800, 1200, 1600 and 1800 and every piece shows at full resolution;
+  800, 1200, 1600 and 1800 and every piece shows at full resolution. No
+  piece image is wider than `maxWidth` (default 2400), however large the
+  photo, and widths are measured after EXIF orientation, so a phone photo
+  stored sideways is never upscaled;
 - grid tiles and cards at `thumbWidths` (default 320 and 640, square; 1.5x
   those, uncropped, in a justified grid).
 
@@ -223,6 +226,7 @@ folder between runs only process new or changed images.
   collectionTaxonomies = []  # e.g. ["collage", "sculpture"]
   thumbWidths = [320, 640]   # grid tiles and cards
   largeWidths = [800, 1200, 1600, 2400]   # piece images
+  maxWidth = 2400            # the widest piece image, whatever the photo's size
 ```
 
 `grid` can also be set on the gallery's or a series' `_index.md`.

@@ -3,5 +3,6 @@
   "section" "gallery" "batchSize" 24 "artform" "Artwork" "untitled" "Untitled"
   "grid" "square" "collectionTaxonomies" slice
   "thumbWidths" (slice 320 640) "largeWidths" (slice 800 1200 1600 2400)
+  "maxWidth" 2400
 -}}
 {{- return merge $defaults (site.Params.artworkGallery | default dict) -}}

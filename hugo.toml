@@ -9,6 +9,7 @@
   collectionTaxonomies = []  # taxonomies whose terms are series, e.g. ["collage", "sculpture"]
   thumbWidths = [320, 640]                # grid tiles and cards (justified grids use 1.5x)
   largeWidths = [800, 1200, 1600, 2400]   # piece images; never wider than the source
+  maxWidth = 2400                         # the widest piece image, whatever the photo's size
 
 [module]
   [module.hugoVersion]
